@@ -1,0 +1,23 @@
+{
+	"name": "@rubriclab/memory",
+	"module": "index.ts",
+	"version": "0.0.0",
+	"type": "module",
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@rubriclab/package": "^0.0.55"
+	},
+	"simple-git-hooks": {
+		"post-commit": "bun run rubriclab-postcommit"
+	},
+	"scripts": {
+		"prepare": "bun x simple-git-hooks",
+		"bleed": "bun x npm-check-updates -u && bun i",
+		"clean": "rm -rf .next && rm -rf node_modules"
+	}
+}
