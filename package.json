@@ -16,6 +16,9 @@
 	"simple-git-hooks": {
 		"post-commit": "bun run rubriclab-postcommit"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"prepare": "bun x simple-git-hooks",
 		"bleed": "bun x npm-check-updates -u && bun i",
