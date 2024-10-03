@@ -1,31 +1,31 @@
 {
-	"name": "@rubriclab/memory",
-	"module": "index.ts",
-	"version": "0.0.0",
-	"private": false,
-	"type": "module",
-	"devDependencies": {
-		"@types/bun": "^1.1.10"
-	},
-	"peerDependencies": {
-		"typescript": "^5.0.0"
-	},
-	"dependencies": {
-		"@rubriclab/package": "*",
-		"@rubriclab/config": "*"
-	},
-	"simple-git-hooks": {
-		"post-commit": "bun run rubriclab-postcommit"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"prepare": "bun x simple-git-hooks",
-		"bleed": "bun x npm-check-updates -u && bun i",
-		"clean": "rm -rf .next && rm -rf node_modules",
-		"format": "bun x biome format --write .",
-		"lint": "bun x biome check .",
-		"lint:fix": "bun x biome lint . --write --unsafe"
-	}
+  "name": "@rubriclab/memory",
+  "module": "index.ts",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "^1.1.10"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@rubriclab/package": "*",
+    "@rubriclab/config": "*"
+  },
+  "simple-git-hooks": {
+    "post-commit": "bun run rubriclab-postcommit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepare": "bun x simple-git-hooks",
+    "bleed": "bun x npm-check-updates -u && bun i",
+    "clean": "rm -rf .next && rm -rf node_modules",
+    "format": "bun x biome format --write .",
+    "lint": "bun x biome check .",
+    "lint:fix": "bun x biome lint . --write --unsafe"
+  }
 }
