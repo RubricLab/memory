@@ -11,7 +11,8 @@
 		"typescript": "^5.0.0"
 	},
 	"dependencies": {
-		"@rubriclab/package": "^0.0.55"
+		"@rubriclab/package": "*",
+		"@rubriclab/config": "*"
 	},
 	"simple-git-hooks": {
 		"post-commit": "bun run rubriclab-postcommit"
@@ -22,6 +23,9 @@
 	"scripts": {
 		"prepare": "bun x simple-git-hooks",
 		"bleed": "bun x npm-check-updates -u && bun i",
-		"clean": "rm -rf .next && rm -rf node_modules"
+		"clean": "rm -rf .next && rm -rf node_modules",
+		"format": "bun x biome format --write .",
+		"lint": "bun x biome check .",
+		"lint:fix": "bun x biome lint . --write --unsafe"
 	}
 }
