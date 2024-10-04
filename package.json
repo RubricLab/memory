@@ -1,7 +1,7 @@
 {
   "name": "@rubriclab/memory",
   "module": "index.ts",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -22,7 +22,7 @@
   },
   "scripts": {
     "prepare": "bun x simple-git-hooks",
-    "bleed": "bun x npm-check-updates -u && bun i",
+    "bleed": "bun x npm-check-updates -u",
     "clean": "rm -rf .next && rm -rf node_modules",
     "format": "bun x biome format --write .",
     "lint": "bun x biome check . && bun x biome lint .",
