@@ -1,54 +1,23 @@
-import { openai } from '@ai-sdk/openai'
-import { generateObject } from 'ai'
+import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
-import { z } from 'zod'
-import { clean, format } from '../../utils/string.ts'
+import { Memory } from '../../index.ts'
+import { format } from '../../utils/string.ts'
 import { EXAMPLES } from './examples.ts'
 
-export const runOneShotExamples = async ({ fast }: { fast?: boolean }) => {
+export const runOneShotExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
 	let totalFacts = 0
 	let totalRecall = 0
 	let totalAttempts = 0
+
+	const memory = new Memory({ model })
 
 	for await (const eg of EXAMPLES) {
 		totalFacts += eg.facts.length
 
 		console.log(chalk.yellow(`\n\n"${eg.content}"`))
 
-		const {
-			object: { facts: attempts }
-		} = await generateObject({
-			model: openai(fast ? 'gpt-4o-mini' : 'gpt-4o-2024-08-06'),
-			schema: z.object({
-				facts: z.array(
-					z.object({
-						subject: z.string(),
-						relation: z.string().describe('a verb phrase'),
-						object: z.string(),
-						data: z.record(z.string(), z.string()).optional().describe('to capture any additional info')
-					})
-				)
-			}),
-			prompt: clean`Please extract all probable and implicit facts from the following passage.
-            Portray the first-person as "user".
-            Capture new relationships.
-            Try to capture the most up-to-date state of affairs in present tense.
-            Passage:
-            "${eg.content}"
-            `
-			// messages: [
-			// 	{
-			// 		role: 'system',
-			// 		content: clean`Please extract all probable and implicit facts from the following passage.
-			//       Portray the first-person as "user".
-			//       Capture new relationships.
-			//       Try to capture the most up-to-date state of affairs in present tense.`
-			// 	},
-			// 	{
-			// 		role: 'user',
-			// 		content: eg.content
-			// 	}
-			// ]
+		const { facts: attempts } = await memory.extract({
+			content: eg.content
 		})
 
 		const omitted: number[] = []

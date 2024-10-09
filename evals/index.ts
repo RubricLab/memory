@@ -29,6 +29,8 @@ if (import.meta.path === Bun.main) {
 		process.exit(0)
 	}
 
-	await runOneShotExamples({ fast: args.values.fast })
-	await runMultiTurnExamples({ fast: args.values.fast })
+	const model = args.values.fast ? 'gpt-4o-mini' : 'gpt-4o-2024-08-06'
+
+	await runOneShotExamples({ model })
+	await runMultiTurnExamples({ model })
 }
