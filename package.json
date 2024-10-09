@@ -1,7 +1,7 @@
 {
   "name": "@rubriclab/memory",
   "module": "index.ts",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -11,8 +11,13 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.66",
+    "@rubriclab/config": "*",
     "@rubriclab/package": "*",
-    "@rubriclab/config": "*"
+    "@t3-oss/env-nextjs": "^0.11.1",
+    "ai": "^3.4.9",
+    "chalk": "^5.3.0",
+    "zod": "^3.23.8"
   },
   "simple-git-hooks": {
     "post-commit": "bun run rubriclab-postcommit"
@@ -25,6 +30,7 @@
     "bleed": "bun x npm-check-updates -u",
     "clean": "rm -rf .next && rm -rf node_modules",
     "format": "bun x biome format --write .",
+    "eval": "bun evals/index.ts",
     "lint": "bun x biome check . && bun x biome lint .",
     "lint:fix": "bun x biome check --fix --unsafe . && bun x biome lint --write --unsafe ."
   }
