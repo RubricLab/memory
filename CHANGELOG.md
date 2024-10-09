@@ -1,3 +1,4 @@
+- [2024-10-09] [Add help cmd](https://github.com/RubricLab/memory/commit/9f35d0016dcd5d0f909cb77c2ea33ef70da60fb1)
 - [2024-10-09] [Scaffold evals](https://github.com/RubricLab/memory/commit/3801514a795881c74ea225d02eeae001a07ee57a)
 - [2024-10-04] [bleed for mono](https://github.com/RubricLab/memory/commit/6db7d39072c60714068bcb00b07bbf917d76b4b8)
 - [2024-10-03] [mod lint script](https://github.com/RubricLab/memory/commit/e5a4392d2e7852f0d1424f730aa1316bfeb66f3b)

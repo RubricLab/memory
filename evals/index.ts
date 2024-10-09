@@ -94,9 +94,26 @@ const args = parseArgs({
 		fast: {
 			type: 'boolean',
 			default: false
+		},
+		help: {
+			type: 'boolean',
+			default: false
 		}
 	},
 	allowPositionals: true
 })
 
-if (import.meta.path === Bun.main) main({ fast: args.values.fast })
+if (import.meta.path === Bun.main) {
+	if (args.values.help) {
+		console.log(`
+  Usage: bun evals/index.ts [options]
+
+  Options:
+    --fast    Use gpt-4o-mini instead of gpt-4o-2024-08-06
+    --help    Show this help message
+`)
+		process.exit(0)
+	}
+
+	main({ fast: args.values.fast })
+}
