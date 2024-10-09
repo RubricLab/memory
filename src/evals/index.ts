@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util'
-import { runOneShotExamples } from './one-shot'
-import { runMultiTurnExamples } from './multi-turn'
+import { runMultiTurnExamples } from '@/evals/multi-turn'
+import { runOneShotExamples } from '@/evals/one-shot'
 
 const args = parseArgs({
 	args: Bun.argv,

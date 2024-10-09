@@ -1,9 +1,4 @@
-type Fact = {
-	subject: string
-	relation: string
-	object: string
-	data?: Record<string, string>
-}
+import type { Fact } from '@/types'
 
 type Example = {
 	content: string

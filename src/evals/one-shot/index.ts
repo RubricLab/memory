@@ -1,8 +1,8 @@
+import { Memory } from '@/'
+import { format } from '@/utils/string'
 import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
-import { Memory } from '../../index.ts'
-import { format } from '../../utils/string.ts'
-import { EXAMPLES } from './examples.ts'
+import { EXAMPLES } from './examples'
 
 export const runOneShotExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
 	let totalFacts = 0

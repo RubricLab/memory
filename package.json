@@ -1,7 +1,7 @@
 {
   "name": "@rubriclab/memory",
-  "module": "index.ts",
-  "version": "0.0.8",
+  "module": "src/index.ts",
+  "version": "0.0.9",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -30,7 +30,7 @@
     "bleed": "bun x npm-check-updates -u",
     "clean": "rm -rf .next && rm -rf node_modules",
     "format": "bun x biome format --write .",
-    "eval": "bun evals/index.ts",
+    "eval": "bun src/evals/index.ts",
     "lint": "bun x biome check . && bun x biome lint .",
     "lint:fix": "bun x biome check --fix --unsafe . && bun x biome lint --write --unsafe ."
   }
