@@ -48,7 +48,7 @@ export const EXAMPLES: Example[] = [
 		]
 	},
 	{
-		content: 'I am vegan... (2 hours later)... I am no longer vegan.',
+		content: 'I am vegan... (2 hours later)... I am not vegan.',
 		facts: [
 			{
 				subject: 'user',
