@@ -15,7 +15,7 @@ await db
 	.get()
 
 export const runMultiTurnExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
-	const memory = new Memory({ model })
+	const memory = new Memory({ model, db })
 
 	let totalFacts = 0
 	let totalRecall = 0
@@ -40,20 +40,7 @@ export const runMultiTurnExamples = async ({ model }: { model: Parameters<typeof
 					`\n🎯 ${i + 1} of ${message.facts.length}: ${chalk.magenta(fact.subject)} ${chalk.yellow(fact.relation)} ${chalk.blue(fact.object)}`
 				)
 
-				for (const attempt of attempts) {
-					const { subject, relation, object } = attempt
-
-					db
-						.prepare(`
-							insert into facts (subject, relation, object)
-							values ($1, $2, $3)
-							on conflict (subject, object) do update set relation = $2
-						`)
-						.run(subject, relation, object)
-				}
-
 				const newFacts = db.query('select * from facts').all()
-				console.log({ newFacts })
 
 				for (const [k, newFact] of newFacts.entries()) {
 					const { subject, relation, object } = newFact as Fact
@@ -77,6 +64,7 @@ export const runMultiTurnExamples = async ({ model }: { model: Parameters<typeof
 						break
 					}
 				}
+
 				totalRecall += correctFacts
 			}
 
