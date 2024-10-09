@@ -9,6 +9,11 @@ const args = parseArgs({
 			type: 'boolean',
 			default: false
 		},
+		dataset: {
+			type: 'string',
+			default: '1',
+			choices: ['1', '2']
+		},
 		help: {
 			type: 'boolean',
 			default: false
@@ -18,7 +23,8 @@ const args = parseArgs({
 })
 
 if (import.meta.path === Bun.main) {
-	if (args.values.help) {
+	const { help, fast, dataset } = args.values
+	if (help) {
 		console.log(`
   Usage: bun evals/index.ts [options]
 
@@ -29,8 +35,11 @@ if (import.meta.path === Bun.main) {
 		process.exit(0)
 	}
 
-	const model = args.values.fast ? 'gpt-4o-mini' : 'gpt-4o-2024-08-06'
+	const model = fast ? 'gpt-4o-mini' : 'gpt-4o-2024-08-06'
 
-	await runOneShotExamples({ model })
-	await runMultiTurnExamples({ model })
+	if (dataset === '1') {
+		await runOneShotExamples({ model })
+	} else if (dataset === '2') {
+		await runMultiTurnExamples({ model })
+	}
 }

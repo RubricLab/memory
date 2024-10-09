@@ -1,15 +1,15 @@
-import { Memory } from '@/'
+import { Memory } from '@/index'
 import { format } from '@/utils/string'
 import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
 export const runOneShotExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
+	const memory = new Memory({ model })
+
 	let totalFacts = 0
 	let totalRecall = 0
 	let totalAttempts = 0
-
-	const memory = new Memory({ model })
 
 	for await (const eg of EXAMPLES) {
 		totalFacts += eg.facts.length
