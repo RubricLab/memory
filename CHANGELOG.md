@@ -1,3 +1,4 @@
+- [2024-10-09] [Fix precision calc](https://github.com/RubricLab/memory/commit/52fc41e151c47e276c37a24b3489ba414d032a0b)
 - [2024-10-09] [Generalize eval arch](https://github.com/RubricLab/memory/commit/bf80487850e840525a1521925a439d7d9fc8d638)
 - [2024-10-09] [Add help cmd](https://github.com/RubricLab/memory/commit/9f35d0016dcd5d0f909cb77c2ea33ef70da60fb1)
 - [2024-10-09] [Scaffold evals](https://github.com/RubricLab/memory/commit/3801514a795881c74ea225d02eeae001a07ee57a)

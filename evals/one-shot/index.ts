@@ -11,8 +11,6 @@ export const runOneShotExamples = async ({ fast }: { fast?: boolean }) => {
 	let totalAttempts = 0
 
 	for await (const eg of EXAMPLES) {
-		let correctFacts = 0
-
 		totalFacts += eg.facts.length
 
 		console.log(chalk.yellow(`\n\n"${eg.content}"`))
@@ -56,6 +54,8 @@ export const runOneShotExamples = async ({ fast }: { fast?: boolean }) => {
 		const omitted: number[] = []
 
 		for (const [i, fact] of eg.facts.entries()) {
+			let correctFacts = 0
+
 			console.log(
 				`\n🎯 ${i + 1} of ${eg.facts.length}: ${chalk.magenta(fact.subject)} ${chalk.yellow(fact.relation)} ${chalk.blue(fact.object)}`
 			)
@@ -67,12 +67,13 @@ export const runOneShotExamples = async ({ fast }: { fast?: boolean }) => {
 				const correctRelation = fact.relation === relation
 				const correctObject = fact.object === object
 
-				if (omitted.includes(j)) continue
 				console.log(
 					`🤖 ${j + 1} of ${attempts.length}: ${chalk.magenta(format(subject, correctSubject))} ${chalk.yellow(
 						format(relation, correctRelation)
 					)} ${chalk.blue(format(object, correctObject))}`
 				)
+
+				if (omitted.includes(j)) continue
 
 				correctFacts += Number(correctSubject && correctRelation && correctObject)
 
@@ -81,9 +82,10 @@ export const runOneShotExamples = async ({ fast }: { fast?: boolean }) => {
 					break
 				}
 			}
+
+			totalRecall += correctFacts
 		}
 
-		totalRecall += correctFacts
 		totalAttempts += attempts.length
 	}
 
