@@ -82,6 +82,12 @@ export class Memory {
             "${content}"`
 		})
 
+		return { facts }
+	}
+
+	async insert({ content }: { content: string }) {
+		const { facts } = await this.extract({ content })
+
 		for await (const fact of facts) {
 			const { subject, relation, object } = fact
 
@@ -96,7 +102,5 @@ export class Memory {
 
 		const priorFacts = this.db.query('select * from facts').all()
 		console.log({ priorFacts })
-
-		return { facts }
 	}
 }
