@@ -1,3 +1,4 @@
+- [2024-10-10] [Add main to pkg](https://github.com/RubricLab/memory/commit/ef8082790fbd93c6ae2b4b47112bc1986dd8f0ab)
 - [2024-10-10] [Move DB to top-level](https://github.com/RubricLab/memory/commit/67913408246413448008f902963eb5a288b963d8)
 - [2024-10-10] [Decouple extraction and save](https://github.com/RubricLab/memory/commit/d5fd7c08eff9458b9775ef439b480cd38922759d)
 - [2024-10-09] [Add multi-turn examples](https://github.com/RubricLab/memory/commit/a0e32260e510a3ef1312030fcb5e2685ac2bb300)
