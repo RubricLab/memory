@@ -1,20 +1,17 @@
-import type { Database } from 'bun:sqlite'
+import type { Database, Fact } from '@/types'
 import { clean } from '@/utils/string'
 import { openai } from '@ai-sdk/openai'
 import { generateObject } from 'ai'
 import { z } from 'zod'
-import type { Fact } from './types'
 
 export class Memory {
 	model: Parameters<typeof openai>[0]
 	db: Database
 
 	async createTable() {
-		await this.db
-			.prepare(
-				'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
-			)
-			.get()
+		await this.db.execute(
+			'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
+		)
 	}
 
 	constructor({
@@ -50,11 +47,9 @@ export class Memory {
 
 		const tags = entities?.map(({ subject }) => `"${subject}"`).join(', ') || ''
 
-		const query = this.db.query(
+		const { rows: relevantFacts } = await this.db.execute(
 			`select * from facts where subject in (${tags}) or object in (${tags})`
 		)
-
-		const relevantFacts = query.all() as Fact[]
 
 		const {
 			object: { facts }
@@ -91,16 +86,22 @@ export class Memory {
 		for await (const fact of facts) {
 			const { subject, relation, object } = fact
 
-			this.db
-				.prepare(`
-					insert into facts (subject, relation, object)
-					values ($1, $2, $3)
-					on conflict (subject, object) do update set relation = $2
-				`)
-				.run(subject, relation, object)
+			// this.db
+			// 	.execute(`
+			// 		insert into facts (subject, relation, object)
+			// 		values ($1, $2, $3)
+			// 		on conflict (subject, object) do update set relation = $2
+			// 	`)
+			// 	.run(subject, relation, object)
+
+			// can you make the above work with Drizzle-ORM?
+			await this.db.execute(
+				'insert into facts (subject, relation, object) values ($1, $2, $3) on conflict (subject, object) do update set relation = $2',
+				[subject, relation, object]
+			)
 		}
 
-		const priorFacts = this.db.query('select * from facts').all()
+		const { rows: priorFacts } = await this.db.execute('select * from facts')
 		console.log({ priorFacts })
 	}
 }

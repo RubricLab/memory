@@ -1,3 +1,4 @@
+- [2024-10-10] [Scaffold Drizzle DB connection](https://github.com/RubricLab/memory/commit/b381c119174b03f3aa5a591064235269a1c4d199)
 - [2024-10-10] [Decouple extraction and save](https://github.com/RubricLab/memory/commit/d5fd7c08eff9458b9775ef439b480cd38922759d)
 - [2024-10-09] [Add multi-turn examples](https://github.com/RubricLab/memory/commit/a0e32260e510a3ef1312030fcb5e2685ac2bb300)
 - [2024-10-09] [Scaffold multi-turn evals](https://github.com/RubricLab/memory/commit/ecb5531acef6a924b81684660150eeb71d93e704)

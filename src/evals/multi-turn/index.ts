@@ -1,20 +1,17 @@
-import { Database } from 'bun:sqlite'
 import { Memory } from '@/index'
-import type { Fact } from '@/types'
+import type { Database, Fact } from '@/types'
 import { format } from '@/utils/string'
 import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
-const db = new Database(':memory:', { create: true, strict: true })
-
-await db
-	.prepare(
-		'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
-	)
-	.get()
-
-export const runMultiTurnExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
+export const runMultiTurnExamples = async ({
+	model,
+	db
+}: {
+	model: Parameters<typeof openai>[0]
+	db: Database
+}) => {
 	const memory = new Memory({ model, db })
 
 	let totalFacts = 0
@@ -40,7 +37,7 @@ export const runMultiTurnExamples = async ({ model }: { model: Parameters<typeof
 					`\n🎯 ${i + 1} of ${message.facts.length}: ${chalk.magenta(fact.subject)} ${chalk.yellow(fact.relation)} ${chalk.blue(fact.object)}`
 				)
 
-				const newFacts = db.query('select * from facts').all()
+				const { rows: newFacts } = await db.execute('select * from facts')
 
 				for (const [k, newFact] of newFacts.entries()) {
 					const { subject, relation, object } = newFact as Fact

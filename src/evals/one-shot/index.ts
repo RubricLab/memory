@@ -1,13 +1,17 @@
-import { Database } from 'bun:sqlite'
 import { Memory } from '@/index'
+import type { Database } from '@/types'
 import { format } from '@/utils/string'
 import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
-const db = new Database(':memory:', { create: true, strict: true })
-
-export const runOneShotExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
+export const runOneShotExamples = async ({
+	model,
+	db
+}: {
+	model: Parameters<typeof openai>[0]
+	db: Database
+}) => {
 	const memory = new Memory({ model, db })
 
 	let totalFacts = 0
