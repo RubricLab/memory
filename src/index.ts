@@ -45,7 +45,7 @@ export class Memory {
             "${content}"`
 		})
 
-		const tags = entities?.map(({ name }) => `"${name}"`).join(', ') || ''
+		const tags = entities?.map(({ name }) => `'${name}'`).join(', ') || ''
 
 		const relevantFacts = (await this.db.execute(
 			`select * from facts where subject in (${tags}) or object in (${tags})`
@@ -88,12 +88,11 @@ export class Memory {
 
 			await this.db.execute(`
 					insert into facts (subject, relation, object)
-					values (${subject}, ${relation}, ${object})
-					on conflict (subject, object) do update set relation = ${relation}
+					values ("${subject}", "${relation}", "${object}")
+					on conflict (subject, object) do update set relation = "${relation}"
 				`)
 		}
 
-		const priorFacts = await this.db.execute('select * from facts')
-		console.log({ priorFacts })
+		return { facts }
 	}
 }

@@ -1,3 +1,4 @@
+- [2024-10-10] [Fix post-insert return](https://github.com/RubricLab/memory/commit/a79a936cff2baadbd5411caec354579b47d8c846)
 - [2024-10-10] [Support more DBs. Simplify types.](https://github.com/RubricLab/memory/commit/c9500b038646adac4a4250b9956914bafbb53bea)
 - [2024-10-10] [Add main to pkg](https://github.com/RubricLab/memory/commit/ef8082790fbd93c6ae2b4b47112bc1986dd8f0ab)
 - [2024-10-10] [Move DB to top-level](https://github.com/RubricLab/memory/commit/67913408246413448008f902963eb5a288b963d8)

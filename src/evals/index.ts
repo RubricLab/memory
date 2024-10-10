@@ -25,6 +25,7 @@ const args = parseArgs({
 
 if (import.meta.path === Bun.main) {
 	const { help, sota, dataset } = args.values
+
 	if (help) {
 		console.log(`
   Usage: bun evals/index.ts [options]
@@ -41,7 +42,7 @@ if (import.meta.path === Bun.main) {
 	const bunDB = new Database(':memory:', { create: true, strict: true })
 
 	const db = {
-		execute: async (cmd: string) => await bunDB.prepare(cmd).get()
+		execute: async (cmd: string) => await bunDB.prepare(cmd).all()
 	}
 
 	await db.execute(

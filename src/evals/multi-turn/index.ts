@@ -17,11 +17,13 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 
 			console.log(chalk.yellow(`\n\n"${message.content}"`))
 
-			const { facts: attempts } = await memory.extract({
+			// Clean up DB in between conversations
+			const omitted: number[] = []
+			await db.execute('delete from facts')
+
+			const { facts: attempts } = await memory.insert({
 				content: message.content
 			})
-
-			const omitted: number[] = []
 
 			for (const [i, fact] of message.facts.entries()) {
 				let correctFacts = 0
@@ -39,13 +41,20 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 					const correctRelation = fact.relation === relation
 					const correctObject = fact.object === object
 
+					if (omitted.includes(k)) {
+						console.log(
+							chalk.blackBright.italic(
+								`🤖 ${k + 1} of ${newFacts.length}: ${subject} ${relation} ${object}`
+							)
+						)
+						continue
+					}
+
 					console.log(
 						`🤖 ${k + 1} of ${newFacts.length}: ${chalk.magenta(format(subject, correctSubject))} ${chalk.yellow(
 							format(relation, correctRelation)
 						)} ${chalk.blue(format(object, correctObject))}`
 					)
-
-					if (omitted.includes(k)) continue
 
 					correctFacts += Number(correctSubject && correctRelation && correctObject)
 
