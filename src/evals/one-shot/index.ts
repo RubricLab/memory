@@ -1,14 +1,10 @@
 import { Memory } from '@/index'
-import type { Database } from '@/types'
+import type { Database, LLM } from '@/types'
 import { format } from '@/utils/string'
-import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
-export const runOneShotExamples = async ({
-	db,
-	model
-}: { model: Parameters<typeof openai>[0]; db: Database }) => {
+export const runOneShotExamples = async ({ db, model }: { model: LLM; db: Database }) => {
 	const memory = new Memory({ model, db })
 
 	let totalFacts = 0

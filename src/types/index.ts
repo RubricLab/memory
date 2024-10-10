@@ -1,4 +1,4 @@
-import type { Database as BunDatabase } from 'bun:sqlite'
+import type { openai } from '@ai-sdk/openai'
 
 export type Fact = {
 	subject: string
@@ -7,4 +7,8 @@ export type Fact = {
 	data?: Record<string, string>
 }
 
-export type Database = BunDatabase
+export type Database = {
+	execute: (cmd: string) => Promise<unknown>
+}
+
+export type LLM = Parameters<typeof openai>[0]

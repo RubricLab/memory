@@ -1,27 +1,24 @@
-import type { Database } from 'bun:sqlite'
 import { clean } from '@/utils/string'
 import { openai } from '@ai-sdk/openai'
 import { generateObject } from 'ai'
 import { z } from 'zod'
-import type { Fact } from './types'
+import type { Database, Fact, LLM } from './types'
 
 export class Memory {
-	model: Parameters<typeof openai>[0]
+	model: LLM
 	db: Database
 
 	async createTable() {
-		await this.db
-			.prepare(
-				'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
-			)
-			.get()
+		await this.db.execute(
+			'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
+		)
 	}
 
 	constructor({
-		model,
+		model = 'gpt-4o-mini',
 		db
 	}: {
-		model: Parameters<typeof openai>[0]
+		model?: LLM
 		db: Database
 	}) {
 		this.model = model
@@ -38,7 +35,7 @@ export class Memory {
 			schema: z.object({
 				entities: z.array(
 					z.object({
-						subject: z.string()
+						name: z.string()
 					})
 				)
 			}),
@@ -48,13 +45,11 @@ export class Memory {
             "${content}"`
 		})
 
-		const tags = entities?.map(({ subject }) => `"${subject}"`).join(', ') || ''
+		const tags = entities?.map(({ name }) => `"${name}"`).join(', ') || ''
 
-		const query = this.db.query(
+		const relevantFacts = (await this.db.execute(
 			`select * from facts where subject in (${tags}) or object in (${tags})`
-		)
-
-		const relevantFacts = query.all() as Fact[]
+		)) as Fact[]
 
 		const {
 			object: { facts }
@@ -91,16 +86,14 @@ export class Memory {
 		for await (const fact of facts) {
 			const { subject, relation, object } = fact
 
-			this.db
-				.prepare(`
+			await this.db.execute(`
 					insert into facts (subject, relation, object)
-					values ($1, $2, $3)
-					on conflict (subject, object) do update set relation = $2
+					values (${subject}, ${relation}, ${object})
+					on conflict (subject, object) do update set relation = ${relation}
 				`)
-				.run(subject, relation, object)
 		}
 
-		const priorFacts = this.db.query('select * from facts').all()
+		const priorFacts = await this.db.execute('select * from facts')
 		console.log({ priorFacts })
 	}
 }

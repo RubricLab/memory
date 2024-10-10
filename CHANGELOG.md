@@ -1,3 +1,4 @@
+- [2024-10-10] [Support more DBs. Simplify types.](https://github.com/RubricLab/memory/commit/c9500b038646adac4a4250b9956914bafbb53bea)
 - [2024-10-10] [Add main to pkg](https://github.com/RubricLab/memory/commit/ef8082790fbd93c6ae2b4b47112bc1986dd8f0ab)
 - [2024-10-10] [Move DB to top-level](https://github.com/RubricLab/memory/commit/67913408246413448008f902963eb5a288b963d8)
 - [2024-10-10] [Decouple extraction and save](https://github.com/RubricLab/memory/commit/d5fd7c08eff9458b9775ef439b480cd38922759d)

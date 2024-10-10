@@ -6,7 +6,7 @@ import { runOneShotExamples } from '@/evals/one-shot'
 const args = parseArgs({
 	args: Bun.argv,
 	options: {
-		fast: {
+		sota: {
 			type: 'boolean',
 			default: false
 		},
@@ -24,27 +24,29 @@ const args = parseArgs({
 })
 
 if (import.meta.path === Bun.main) {
-	const { help, fast, dataset } = args.values
+	const { help, sota, dataset } = args.values
 	if (help) {
 		console.log(`
   Usage: bun evals/index.ts [options]
 
   Options:
-    --fast    Use gpt-4o-mini instead of gpt-4o-2024-08-06
+    --sota    Use gpt-4o-2024-08-06 instead of gpt-4o-mini
     --help    Show this help message
 `)
 		process.exit(0)
 	}
 
-	const model = fast ? 'gpt-4o-mini' : 'gpt-4o-2024-08-06'
+	const model = sota ? 'gpt-4o-2024-08-06' : 'gpt-4o-mini'
 
-	const db = new Database(':memory:', { create: true, strict: true })
+	const bunDB = new Database(':memory:', { create: true, strict: true })
 
-	await db
-		.prepare(
-			'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
-		)
-		.get()
+	const db = {
+		execute: async (cmd: string) => await bunDB.prepare(cmd).get()
+	}
+
+	await db.execute(
+		'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
+	)
 
 	if (dataset === '1') {
 		await runOneShotExamples({ db, model })

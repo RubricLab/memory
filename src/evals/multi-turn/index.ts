@@ -1,14 +1,10 @@
 import { Memory } from '@/index'
-import type { Database, Fact } from '@/types'
+import type { Database, Fact, LLM } from '@/types'
 import { format } from '@/utils/string'
-import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
-export const runMultiTurnExamples = async ({
-	db,
-	model
-}: { model: Parameters<typeof openai>[0]; db: Database }) => {
+export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Database }) => {
 	const memory = new Memory({ model, db })
 
 	let totalFacts = 0
@@ -34,7 +30,7 @@ export const runMultiTurnExamples = async ({
 					`\n🎯 ${i + 1} of ${message.facts.length}: ${chalk.magenta(fact.subject)} ${chalk.yellow(fact.relation)} ${chalk.blue(fact.object)}`
 				)
 
-				const newFacts = db.query('select * from facts').all()
+				const newFacts = (await db.execute('select * from facts')) as Fact[]
 
 				for (const [k, newFact] of newFacts.entries()) {
 					const { subject, relation, object } = newFact as Fact
