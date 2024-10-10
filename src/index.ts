@@ -1,8 +1,8 @@
-import { clean } from '@/utils/string'
 import { openai } from '@ai-sdk/openai'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 import type { Database, Fact, LLM } from './types'
+import { clean } from './utils/string'
 
 export class Memory {
 	model: LLM
