@@ -1,20 +1,14 @@
-import { Database } from 'bun:sqlite'
 import { Memory } from '@/index'
-import type { Fact } from '@/types'
+import type { Database, Fact } from '@/types'
 import { format } from '@/utils/string'
 import type { openai } from '@ai-sdk/openai'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
-const db = new Database(':memory:', { create: true, strict: true })
-
-await db
-	.prepare(
-		'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
-	)
-	.get()
-
-export const runMultiTurnExamples = async ({ model }: { model: Parameters<typeof openai>[0] }) => {
+export const runMultiTurnExamples = async ({
+	db,
+	model
+}: { model: Parameters<typeof openai>[0]; db: Database }) => {
 	const memory = new Memory({ model, db })
 
 	let totalFacts = 0

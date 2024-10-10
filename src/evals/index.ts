@@ -1,3 +1,4 @@
+import Database from 'bun:sqlite'
 import { parseArgs } from 'node:util'
 import { runMultiTurnExamples } from '@/evals/multi-turn'
 import { runOneShotExamples } from '@/evals/one-shot'
@@ -37,9 +38,17 @@ if (import.meta.path === Bun.main) {
 
 	const model = fast ? 'gpt-4o-mini' : 'gpt-4o-2024-08-06'
 
+	const db = new Database(':memory:', { create: true, strict: true })
+
+	await db
+		.prepare(
+			'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
+		)
+		.get()
+
 	if (dataset === '1') {
-		await runOneShotExamples({ model })
+		await runOneShotExamples({ db, model })
 	} else if (dataset === '2') {
-		await runMultiTurnExamples({ model })
+		await runMultiTurnExamples({ db, model })
 	}
 }
