@@ -1,3 +1,4 @@
+- [2024-10-10] [Expand on unique tagging](https://github.com/RubricLab/memory/commit/3c550db0b9cce3ce9f54fc56ecc6716d8475b397)
 - [2024-10-10] [Add typesafe SQL setup](https://github.com/RubricLab/memory/commit/9acd10a3be5e0335970ca8f551a03847e04fcdda)
 - [2024-10-10] [Use relative import](https://github.com/RubricLab/memory/commit/2161e8cc919ac63da4b092b61ff811566417bc08)
 - [2024-10-10] [Fix post-insert return](https://github.com/RubricLab/memory/commit/a79a936cff2baadbd5411caec354579b47d8c846)

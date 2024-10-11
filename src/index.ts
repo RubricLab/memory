@@ -115,7 +115,10 @@ export class Memory {
 		return inserted
 	}
 
-	async search(query: string, { threshold, limit } = { threshold: 0.5, limit: 10 }) {
+	async search(
+		query: string,
+		{ threshold, limit } = { threshold: 0.5, limit: 10 }
+	): Promise<searchVector.Result[]> {
 		const vector = await this.embed(query)
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -130,23 +133,70 @@ export class Memory {
 
 		const uniqueTags = [...new Set(tags)]
 
-		await Promise.all(uniqueTags.map(tag => this.insert(tag)))
-
 		const similarTags = await Promise.all(uniqueTags.map(tag => this.search(tag)))
+		const similarTagIds = similarTags.flatMap(t => t[0]?.id || [])
+		console.log('similarTags', similarTags)
 
-		console.log(similarTags)
+		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s[0]?.body === t))
+		console.log({ netNewTags })
+
+		const tagsInserted = await Promise.all(netNewTags.map(tag => this.insert(tag)))
+		const netNewTagIds = tagsInserted.flatMap(t => t[0]?.id || [])
+
+		if (!netNewTagIds?.[0]) throw 'Failed to insert tags'
+
+		const allTagIds = [...similarTagIds, ...netNewTagIds]
+
+		const creates = facts.flatMap(fact => {
+			return allTagIds.map(tagID =>
+				this.db.relationship.create({
+					data: {
+						fact: {
+							connectOrCreate: {
+								where: {
+									body: fact
+								},
+								create: {
+									body: fact
+								}
+							}
+						},
+						tag: {
+							connect: {
+								id: tagID
+							}
+						}
+					}
+				})
+			)
+		})
+
+		const created = await this.db.$transaction(creates)
+		console.log({ created })
 
 		const relatedFacts = await this.db.relationship.findMany({
 			where: {
 				tag: {
-					body: {
-						in: similarTags.map(tag => tag[0]?.body || '')
+					id: {
+						in: allTagIds
+					}
+				}
+			},
+			select: {
+				fact: {
+					select: {
+						body: true
+					}
+				},
+				tag: {
+					select: {
+						body: true
 					}
 				}
 			}
 		})
 
-		console.log({ relatedFacts })
+		console.log('relatedFacts', relatedFacts)
 
 		return { tags, facts }
 	}

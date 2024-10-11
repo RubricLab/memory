@@ -12,6 +12,10 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 	let totalAttempts = 0
 
 	for await (const eg of EXAMPLES.slice(0, 1)) {
+		await db.tag.deleteMany()
+		await db.fact.deleteMany()
+		await db.relationship.deleteMany()
+
 		for await (const message of eg.messages) {
 			totalFacts += message.facts.length
 
@@ -19,7 +23,6 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 
 			// Clean up DB in between conversations
 			const omitted: number[] = []
-			// await db.fact.deleteMany()
 
 			const { facts: attempts } = await memory.ingest({
 				content: message.content
