@@ -122,7 +122,40 @@ export class Memory {
 		const vector = await this.embed(query)
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		return await this.db.$queryRawTyped(searchVector(vector as any, threshold, limit))
+		const res = await this.db.$queryRawTyped(searchVector(vector as any, threshold, limit))
+		return res
+	}
+
+	async getAll(args?: { where: { tags: string[] } }) {
+		const { where } = args || {}
+
+		const relations = await this.db.relationship.findMany({
+			where: {
+				...(where?.tags
+					? {
+							tag: {
+								body: {
+									in: where.tags
+								}
+							}
+						}
+					: {})
+			},
+			select: {
+				fact: {
+					select: {
+						body: true
+					}
+				},
+				tag: {
+					select: {
+						body: true
+					}
+				}
+			}
+		})
+
+		return relations
 	}
 
 	async ingest({ content }: { content: string }) {
@@ -133,6 +166,7 @@ export class Memory {
 
 		const uniqueTags = [...new Set(tags)]
 
+		// TODO: pass these back to AI to update existing facts
 		const similarTags = await Promise.all(uniqueTags.map(tag => this.search(tag)))
 		const similarTagIds = similarTags.flatMap(t => t[0]?.id || [])
 		console.log('similarTags', similarTags)
@@ -172,31 +206,32 @@ export class Memory {
 		})
 
 		const created = await this.db.$transaction(creates)
-		console.log({ created })
 
-		const relatedFacts = await this.db.relationship.findMany({
-			where: {
-				tag: {
-					id: {
-						in: allTagIds
-					}
-				}
-			},
-			select: {
-				fact: {
-					select: {
-						body: true
-					}
-				},
-				tag: {
-					select: {
-						body: true
-					}
-				}
-			}
-		})
+		console.log(`Added ${created?.length} facts`)
 
-		console.log('relatedFacts', relatedFacts)
+		// const relatedFacts = await this.db.relationship.findMany({
+		// 	where: {
+		// 		tag: {
+		// 			id: {
+		// 				in: allTagIds
+		// 			}
+		// 		}
+		// 	},
+		// 	select: {
+		// 		fact: {
+		// 			select: {
+		// 				body: true
+		// 			}
+		// 		},
+		// 		tag: {
+		// 			select: {
+		// 				body: true
+		// 			}
+		// 		}
+		// 	}
+		// })
+
+		// console.log('relatedFacts', relatedFacts)
 
 		return { tags, facts }
 	}
