@@ -1,7 +1,9 @@
-import Database from 'bun:sqlite'
 import { parseArgs } from 'node:util'
 import { runMultiTurnExamples } from '@/evals/multi-turn'
-import { runOneShotExamples } from '@/evals/one-shot'
+import type { Database } from '@/types'
+import { PrismaClient } from '@prisma/client'
+
+const db: Database = new PrismaClient()
 
 const args = parseArgs({
 	args: Bun.argv,
@@ -10,11 +12,7 @@ const args = parseArgs({
 			type: 'boolean',
 			default: false
 		},
-		dataset: {
-			type: 'string',
-			default: '1',
-			choices: ['1', '2']
-		},
+
 		help: {
 			type: 'boolean',
 			default: false
@@ -24,7 +22,7 @@ const args = parseArgs({
 })
 
 if (import.meta.path === Bun.main) {
-	const { help, sota, dataset } = args.values
+	const { help, sota } = args.values
 
 	if (help) {
 		console.log(`
@@ -39,19 +37,5 @@ if (import.meta.path === Bun.main) {
 
 	const model = sota ? 'gpt-4o-2024-08-06' : 'gpt-4o-mini'
 
-	const bunDB = new Database(':memory:', { create: true, strict: true })
-
-	const db = {
-		execute: async (cmd: string) => await bunDB.prepare(cmd).all()
-	}
-
-	await db.execute(
-		'create table if not exists facts (subject text, relation text, object text, primary key (subject, object))'
-	)
-
-	if (dataset === '1') {
-		await runOneShotExamples({ db, model })
-	} else if (dataset === '2') {
-		await runMultiTurnExamples({ db, model })
-	}
+	await runMultiTurnExamples({ db, model })
 }

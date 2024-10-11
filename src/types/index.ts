@@ -1,4 +1,6 @@
 import type { openai } from '@ai-sdk/openai'
+import type { Prisma, PrismaClient } from '@prisma/client'
+import type { DefaultArgs } from '@prisma/client/runtime/library'
 
 export type Fact = {
 	subject: string
@@ -7,8 +9,6 @@ export type Fact = {
 	data?: Record<string, string>
 }
 
-export type Database = {
-	execute: (cmd: string) => Promise<unknown>
-}
+export type Database = PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 
 export type LLM = Parameters<typeof openai>[0]

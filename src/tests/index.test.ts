@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import { memory } from '@'
+import { Memory } from '@/index'
 
-test('exports a function', () => {
-	expect(typeof memory).toBe('function')
+test('exports a class', () => {
+	expect(typeof Memory).toBe('function')
 })

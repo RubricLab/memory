@@ -1,0 +1,36 @@
+model fact {
+  id String @id @default(nanoid())
+
+  body String
+
+  tags relationship[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model tag {
+  id String @id @default(nanoid())
+
+  body String @unique
+
+  vector Unsupported("vector(768)")?
+
+  facts relationship[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model relationship {
+  id String @id @default(nanoid())
+
+  factId String
+  tagId  String
+
+  fact fact @relation(fields: [factId], references: [id], onDelete: Cascade)
+  tag  tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}

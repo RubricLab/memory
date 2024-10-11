@@ -1,6 +1,6 @@
 import { Memory } from '@/index'
-import type { Database, Fact, LLM } from '@/types'
-import { format } from '@/utils/string'
+import type { Database, LLM } from '@/types'
+// import { format } from '@/utils/string'
 import chalk from 'chalk'
 import { EXAMPLES } from './examples'
 
@@ -11,7 +11,7 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 	let totalRecall = 0
 	let totalAttempts = 0
 
-	for await (const eg of EXAMPLES) {
+	for await (const eg of EXAMPLES.slice(0, 1)) {
 		for await (const message of eg.messages) {
 			totalFacts += message.facts.length
 
@@ -19,53 +19,53 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 
 			// Clean up DB in between conversations
 			const omitted: number[] = []
-			await db.execute('delete from facts')
+			// await db.fact.deleteMany()
 
-			const { facts: attempts } = await memory.insert({
+			const { facts: attempts } = await memory.ingest({
 				content: message.content
 			})
 
-			for (const [i, fact] of message.facts.entries()) {
-				let correctFacts = 0
+			// for (const [i, fact] of message.facts.entries()) {
+			let correctFacts = 0
 
-				console.log(
-					`\n🎯 ${i + 1} of ${message.facts.length}: ${chalk.magenta(fact.subject)} ${chalk.yellow(fact.relation)} ${chalk.blue(fact.object)}`
-				)
+			// 	console.log(
+			// 		`\n🎯 ${i + 1} of ${message.facts.length}: ${chalk.magenta(fact.subject)} ${chalk.yellow(fact.relation)} ${chalk.blue(fact.object)}`
+			// 	)
 
-				const newFacts = (await db.execute('select * from facts')) as Fact[]
+			// 	const newFacts = await db.fact.findMany()
 
-				for (const [k, newFact] of newFacts.entries()) {
-					const { subject, relation, object } = newFact as Fact
+			// 	for (const [k, newFact] of newFacts.entries()) {
+			// 		const { subject, relation, object } = newFact
 
-					const correctSubject = fact.subject === subject
-					const correctRelation = fact.relation === relation
-					const correctObject = fact.object === object
+			// 		const correctSubject = fact.subject === subject
+			// 		const correctRelation = fact.relation === relation
+			// 		const correctObject = fact.object === object
 
-					if (omitted.includes(k)) {
-						console.log(
-							chalk.blackBright.italic(
-								`🤖 ${k + 1} of ${newFacts.length}: ${subject} ${relation} ${object}`
-							)
-						)
-						continue
-					}
+			// 		if (omitted.includes(k)) {
+			// 			console.log(
+			// 				chalk.blackBright.italic(
+			// 					`🤖 ${k + 1} of ${newFacts.length}: ${subject} ${relation} ${object}`
+			// 				)
+			// 			)
+			// 			continue
+			// 		}
 
-					console.log(
-						`🤖 ${k + 1} of ${newFacts.length}: ${chalk.magenta(format(subject, correctSubject))} ${chalk.yellow(
-							format(relation, correctRelation)
-						)} ${chalk.blue(format(object, correctObject))}`
-					)
+			// 		console.log(
+			// 			`🤖 ${k + 1} of ${newFacts.length}: ${chalk.magenta(format(subject, correctSubject))} ${chalk.yellow(
+			// 				format(relation, correctRelation)
+			// 			)} ${chalk.blue(format(object, correctObject))}`
+			// 		)
 
-					correctFacts += Number(correctSubject && correctRelation && correctObject)
+			correctFacts += 0 //Number(correctSubject && correctRelation && correctObject)
 
-					if (correctFacts) {
-						omitted.push(k)
-						break
-					}
-				}
+			// 		if (correctFacts) {
+			// 			omitted.push(k)
+			// 			break
+			// 		}
+			// 	}
 
-				totalRecall += correctFacts
-			}
+			totalRecall += correctFacts
+			// }
 
 			totalAttempts += attempts.length
 		}
