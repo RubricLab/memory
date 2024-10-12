@@ -11,7 +11,7 @@ import {
 import { generateObject } from 'ai'
 import chalk from 'chalk'
 import { z } from 'zod'
-import type { Database, LLM } from './types'
+import { type Database, type LLM, Tag } from './types'
 import { clean } from './utils/string'
 import { uid } from './utils/uid'
 
@@ -112,10 +112,8 @@ export class Memory {
 	async insert(body: string, { userId = this.userId }: { userId?: string }) {
 		const id = uid()
 		const vector = await this.embed(body)
-
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const sql = insertVector(id, body, vector as any, userId || this.userId)
-		const inserted: insertVector.Result[] = await this.db.$queryRawTyped(sql)
+		const sql = insertVector(id, body, vector as unknown as string, userId)
+		const inserted = await this.db.$queryRawTyped(sql)
 
 		return inserted
 	}
@@ -125,10 +123,9 @@ export class Memory {
 		{ threshold = 0.5, limit = 10, userId = this.userId }
 	): Promise<searchVector.Result[]> {
 		const vector = await this.embed(query)
-
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const sql = searchVector(vector as any, threshold, limit, userId)
+		const sql = searchVector(vector as unknown as string, threshold, limit, userId)
 		const res = await this.db.$queryRawTyped(sql)
+
 		return res
 	}
 
@@ -164,6 +161,8 @@ export class Memory {
 	}
 
 	async ingest({ content, userId = this.userId }: { content: string; userId?: string }) {
+		const start = performance.now()
+
 		const [{ tags }, { facts }] = await Promise.all([
 			this.extractTags({ content }),
 			this.extractFacts({ content })
@@ -172,18 +171,87 @@ export class Memory {
 		const uniqueTags = [...new Set(tags)]
 
 		const similarTags = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
-		const similarTagIds = similarTags.flatMap(t => t[0]?.id || [])
+		const similarTagIds = similarTags
+			.flat()
+			.filter(s => s.body !== Tag.User)
+			.map(s => s.id)
+		const uniqueSimilarTagIds = [...new Set(similarTagIds)]
 		console.log('similarTags', similarTags)
 
 		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s[0]?.body === t))
-		console.log({ netNewTags })
+		console.log('netNewTags', netNewTags)
 
+		// TODO: use the `insert()` SQL command to return newly-created IDs
+		// TODO: allow passing tag[] to insert
 		const tagsInserted = await Promise.all(netNewTags.map(tag => this.insert(tag, { userId })))
 		const netNewTagIds = tagsInserted.flatMap(t => t[0]?.id || [])
 
-		if (!netNewTagIds?.[0]) throw 'Failed to insert tags'
+		const allTagIds = [...uniqueSimilarTagIds, ...netNewTagIds]
 
-		const allTagIds = [...similarTagIds, ...netNewTagIds]
+		const relatedFacts = await this.db.relationship.findMany({
+			where: {
+				tag: {
+					id: {
+						in: allTagIds
+					}
+				}
+			},
+			select: {
+				id: true,
+				fact: {
+					select: {
+						body: true
+					}
+				},
+				tag: {
+					select: {
+						body: true
+					}
+				}
+			}
+		})
+
+		console.log('relatedFacts', relatedFacts)
+
+		const {
+			object: { corrections }
+		} = await generateObject({
+			model: openai(this.model),
+			schema: z.object({
+				corrections: z.array(
+					z.object({
+						index: z.number(),
+						newStatement: z.string()
+					})
+				)
+			}),
+			prompt: clean`Given the following statements and some new information, please identify any statements which should be updated.
+				Prior statements:
+				"${relatedFacts.map((r, i) => `${i + 1}. ${r.fact.body}`).join('\n')}"
+				New information:
+				"${facts.map(f => `- ${f}`).join('\n')}"`
+		})
+
+		console.log('corrections', corrections)
+
+		for (const { index, newStatement } of corrections) {
+			if (!relatedFacts[index]) continue
+
+			const outdated = relatedFacts[index]
+
+			await this.db.relationship.update({
+				where: {
+					id: outdated.id
+				},
+				data: {
+					fact: {
+						update: {
+							body: newStatement
+						}
+					}
+				}
+			})
+		}
 
 		const creates = facts.flatMap(fact => {
 			return allTagIds.map(tagID =>
@@ -219,29 +287,7 @@ export class Memory {
 
 		console.log(chalk.green(`Added ${created?.length} facts`))
 
-		// const relatedFacts = await this.db.relationship.findMany({
-		// 	where: {
-		// 		tag: {
-		// 			id: {
-		// 				in: allTagIds
-		// 			}
-		// 		}
-		// 	},
-		// 	select: {
-		// 		fact: {
-		// 			select: {
-		// 				body: true
-		// 			}
-		// 		},
-		// 		tag: {
-		// 			select: {
-		// 				body: true
-		// 			}
-		// 		}
-		// 	}
-		// })
-
-		// console.log('relatedFacts', relatedFacts)
+		console.log(`Completed in ${(performance.now() - start).toFixed(2)}ms`)
 
 		return { tags, facts }
 	}

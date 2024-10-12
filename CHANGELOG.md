@@ -1,3 +1,4 @@
+- [2024-10-11] [Add ability to correct old facts](https://github.com/RubricLab/memory/commit/2fc23586e30ca4e5366cada37c2e04d8647db3e5)
 - [2024-10-11] [User-scope everything](https://github.com/RubricLab/memory/commit/621f063252eff5d8999173494b4c17f223f0d903)
 - [2024-10-11] [Add getAll route](https://github.com/RubricLab/memory/commit/71eb1f5d7afbb26390d2b2617081b46301e9022c)
 - [2024-10-10] [Expand on unique tagging](https://github.com/RubricLab/memory/commit/3c550db0b9cce3ce9f54fc56ecc6716d8475b397)
