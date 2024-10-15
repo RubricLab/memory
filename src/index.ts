@@ -129,7 +129,7 @@ export class Memory {
 		return res
 	}
 
-	async getAll({ where, userId = this.userId }: { where?: { tags: string[] }; userId?: string }) {
+	async getAll({ where, userId = this.userId }: { where?: { tags: string[] }; userId: string }) {
 		const relations = await this.db.relationship.findMany({
 			where: {
 				...(where?.tags
