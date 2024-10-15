@@ -113,7 +113,7 @@ export class Memory {
 		const id = uid()
 		const vector = await this.embed(body)
 		const sql = insertVector(id, body, vector as unknown as string, userId)
-		const inserted = await this.db.$queryRawTyped(sql)
+		const inserted: { id: string }[] = await this.db.$queryRawTyped(sql)
 
 		return inserted
 	}
@@ -170,21 +170,23 @@ export class Memory {
 
 		const uniqueTags = [...new Set(tags)]
 
-		const similarTags = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
-		const similarTagIds = similarTags
-			.flat()
-			.filter(s => s.body !== Tag.User)
-			.map(s => s.id)
-		const uniqueSimilarTagIds = [...new Set(similarTagIds)]
+		const similarTagSearchRes = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
+		const similarTags = similarTagSearchRes.flat().filter(s => s.body !== Tag.User)
+
+		console.log(`search completed: ${(performance.now() - start).toFixed(2)}ms`)
+
+		const uniqueSimilarTagIds = [...new Set(similarTags.map(s => s.id))]
 		console.log('similarTags', similarTags)
 
-		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s[0]?.body === t))
+		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s?.body === t))
 		console.log('netNewTags', netNewTags)
 
 		// TODO: use the `insert()` SQL command to return newly-created IDs
 		// TODO: allow passing tag[] to insert
 		const tagsInserted = await Promise.all(netNewTags.map(tag => this.insert(tag, { userId })))
 		const netNewTagIds = tagsInserted.flatMap(t => t[0]?.id || [])
+
+		console.log(`insert completed: ${(performance.now() - start).toFixed(2)}ms`)
 
 		const allTagIds = [...uniqueSimilarTagIds, ...netNewTagIds]
 
@@ -218,39 +220,47 @@ export class Memory {
 		} = await generateObject({
 			model: openai(this.model),
 			schema: z.object({
-				corrections: z.array(
-					z.object({
-						index: z.number(),
-						newStatement: z.string()
-					})
-				)
+				corrections: z
+					.array(
+						z.object({
+							index: z.number(),
+							newStatement: z.string()
+						})
+					)
+					.optional()
 			}),
 			prompt: clean`Given the following statements and some new information, please identify any statements which should be updated.
+				Statements are generally single-subject, single-verb sentences.
+				Corrections should be made only when a statement is explicitly wrong.
 				Prior statements:
 				"${relatedFacts.map((r, i) => `${i + 1}. ${r.fact.body}`).join('\n')}"
 				New information:
-				"${facts.map(f => `- ${f}`).join('\n')}"`
+				"${facts.map(f => `- ${f}`).join('\n')}"
+				If nothing needs to be corrected, return an empty array.`
 		})
 
 		console.log('corrections', corrections)
+		console.log(`made corrections: ${(performance.now() - start).toFixed(2)}ms`)
 
-		for (const { index, newStatement } of corrections) {
-			if (!relatedFacts[index]) continue
+		if (corrections) {
+			for (const { index, newStatement } of corrections) {
+				if (!relatedFacts[index - 1]) continue
 
-			const outdated = relatedFacts[index]
+				const outdated = relatedFacts[index - 1] as { id: string }
 
-			await this.db.relationship.update({
-				where: {
-					id: outdated.id
-				},
-				data: {
-					fact: {
-						update: {
-							body: newStatement
+				await this.db.relationship.update({
+					where: {
+						id: outdated.id
+					},
+					data: {
+						fact: {
+							update: {
+								body: newStatement
+							}
 						}
 					}
-				}
-			})
+				})
+			}
 		}
 
 		const creates = facts.flatMap(fact => {
@@ -261,23 +271,23 @@ export class Memory {
 							connectOrCreate: {
 								where: {
 									userId_body: {
-										userId: userId,
-										body: fact
+										body: fact,
+										userId
 									}
 								},
 								create: {
 									body: fact,
-									userId: userId
+									userId
 								}
 							}
 						},
 						tag: {
 							connect: {
 								id: tagID,
-								userId: userId
+								userId
 							}
 						},
-						userId: userId
+						userId
 					}
 				})
 			)
