@@ -1,3 +1,4 @@
+- [2024-10-15] [Improve editing ability](https://github.com/RubricLab/memory/commit/c4e105be1a85152af88e77c9b41ef061660e7138)
 - [2024-10-15] [Trigger release](https://github.com/RubricLab/memory/commit/cb0a86ef9092c626da76b2aa74fd497afaeb7601)
 - [2024-10-15] [Prompt eng and handle errors](https://github.com/RubricLab/memory/commit/fd5267164d4af76b0ec26846cb0f54f906825f82)
 - [2024-10-15] [Remove user filter](https://github.com/RubricLab/memory/commit/a879c56559e8cbbd82b317ed53d8c49cf0aab98d)

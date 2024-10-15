@@ -239,50 +239,43 @@ export class Memory {
 		console.log('relatedFacts', relatedFacts)
 
 		const {
-			object: { corrections }
+			object: { toDelete }
 		} = await generateObject({
-			model: openai('gpt-4o-2024-08-06'),
+			model: openai(this.model),
 			schema: z.object({
-				corrections: z
+				toDelete: z
 					.array(
 						z.object({
-							index: z.number(),
-							newStatement: z.string()
+							index: z.number()
 						})
 					)
 					.optional()
 			}),
-			prompt: clean`Given the following statements and some new information, please identify any statements which have been strictly falsified.
+			prompt: clean`Given the following facts and some new information, please identify any statements which have been proven wrong.
 
-				Prior statements:
-				"""
+				Prior knowledge:
 				${relatedFacts.map((r, i) => `${i}. ${r.body}`).join('\n')}
-				"""
 
 				New information:
-				"""
 				${facts.map(f => `- ${f}`).join('\n')}
-				"""
 				
-				New information will be appended by default.
+				Chosen statements will be deleted permanently. Only pick them if certain!
+				Let's do it. You've got this! 🦾
 				`
 		})
 
-		console.log('corrections', corrections)
-		console.log(`made corrections: ${(performance.now() - start).toFixed(2)}ms`)
+		console.log('toDelete', toDelete)
+		console.log(`identified deletions: ${(performance.now() - start).toFixed(2)}ms`)
 
 		const updates =
-			corrections?.flatMap(({ index, newStatement }) => {
+			toDelete?.flatMap(({ index }) => {
 				const outdated = relatedFacts[index]
 
 				if (!outdated) return []
 
-				return this.db.fact.update({
+				return this.db.fact.delete({
 					where: {
 						id: outdated.id
-					},
-					data: {
-						body: newStatement
 					}
 				})
 			}) || []
