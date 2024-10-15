@@ -1,3 +1,4 @@
+- [2024-10-15] [Remove temp type](https://github.com/RubricLab/memory/commit/7edd19d51c8b3d0d9f8625e996e4818614e731dd)
 - [2024-10-15] [Improve editing ability](https://github.com/RubricLab/memory/commit/c4e105be1a85152af88e77c9b41ef061660e7138)
 - [2024-10-15] [Trigger release](https://github.com/RubricLab/memory/commit/cb0a86ef9092c626da76b2aa74fd497afaeb7601)
 - [2024-10-15] [Prompt eng and handle errors](https://github.com/RubricLab/memory/commit/fd5267164d4af76b0ec26846cb0f54f906825f82)
