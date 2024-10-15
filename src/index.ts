@@ -1,6 +1,5 @@
 import { openai } from '@ai-sdk/openai'
 import { Prisma, PrismaClient } from '@prisma/client'
-
 export type Test1 = Prisma.factFindFirstArgs
 import {
 	createVectorExtension,
