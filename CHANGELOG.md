@@ -1,3 +1,4 @@
+- [2024-10-15] [Parallelize embedding, upsertion, and update for perf](https://github.com/RubricLab/memory/commit/38f574d2ba7c00f74f9a97a8e21e05315b47f118)
 - [2024-10-15] [Clean up](https://github.com/RubricLab/memory/commit/0d5f66305ae9c973f7667576b8b7a966c67acbd7)
 - [2024-10-15] [Require userId in getAll](https://github.com/RubricLab/memory/commit/17a1f03ce3817a9aed9391380ff340db15214046)
 - [2024-10-11] [Add ability to correct old facts](https://github.com/RubricLab/memory/commit/2fc23586e30ca4e5366cada37c2e04d8647db3e5)
