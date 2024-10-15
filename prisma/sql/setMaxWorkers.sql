@@ -1,1 +1,0 @@
-set max_parallel_maintenance_workers = 7;

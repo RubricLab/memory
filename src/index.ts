@@ -1,16 +1,17 @@
 import { openai } from '@ai-sdk/openai'
-import { Prisma, PrismaClient } from '@prisma/client'
+import { generateObject } from 'ai'
+import chalk from 'chalk'
+import { Kysely, PostgresDialect, sql } from 'kysely'
+import { Pool } from 'pg'
+import { z } from 'zod'
+import env from '../env'
 import {
 	createVectorExtension,
 	createVectorIndex,
-	searchVector,
 	setMaxWorkers,
 	setWorkerMemory
-} from '@prisma/client/sql'
-import { generateObject } from 'ai'
-import chalk from 'chalk'
-import { z } from 'zod'
-import type { Database, LLM } from './types'
+} from './db/scripts'
+import type { Database, LLM, Schema, SearchResult } from './types'
 import { clean } from './utils/string'
 import { uid } from './utils/uid'
 
@@ -22,17 +23,23 @@ export class Memory {
 	embeddingsDimension: number
 
 	async initVectorIndex() {
-		await this.db.$queryRawTyped(createVectorExtension())
+		await this.db.executeQuery(createVectorExtension.compile(this.db))
 		await Promise.all([
-			this.db.$queryRawTyped(setMaxWorkers()),
-			this.db.$queryRawTyped(setWorkerMemory()),
-			this.db.$queryRawTyped(createVectorIndex())
+			this.db.executeQuery(setMaxWorkers.compile(this.db)),
+			this.db.executeQuery(setWorkerMemory.compile(this.db)),
+			this.db.executeQuery(createVectorIndex.compile(this.db))
 		])
 	}
 
 	constructor({
 		model = 'gpt-4o-mini',
-		db = new PrismaClient(),
+		db = new Kysely<Schema>({
+			dialect: new PostgresDialect({
+				pool: new Pool({
+					connectionString: env.DATABASE_URL
+				})
+			})
+		}),
 		userId = uid(),
 		embeddingsModel = 'text-embedding-3-small',
 		embeddingsDimension = 768
@@ -127,19 +134,17 @@ export class Memory {
 		const values = tags.map((t, i) => ({
 			id: uid(),
 			body: t,
-			vector: vectors[i],
+			vector: JSON.stringify(vectors[i]),
 			userId
 		}))
 
-		const rows = values.map(t => Prisma.sql`(${t.id}, ${t.body}, ${t.vector}, ${t.userId})`)
-
-		const query = Prisma.sql`insert into tag (id, body, vector, "userId")
-			values
-				${Prisma.join(rows, ',')}
-			on conflict (body, "userId") do nothing
-			returning id`
-
-		const inserted: { id: string }[] = await this.db.$queryRaw(query)
+		const inserted = await this.db
+			.insertInto('tag')
+			.columns(['id', 'body', 'vector', 'userId'])
+			.values(values)
+			.onConflict(oc => oc.columns(['body', 'userId']).doNothing())
+			.returning('id')
+			.execute()
 
 		return inserted
 	}
@@ -147,43 +152,49 @@ export class Memory {
 	async search(
 		query: string,
 		{ threshold = 0.5, limit = 10, userId = this.userId }
-	): Promise<searchVector.Result[]> {
+	): Promise<SearchResult[]> {
 		const vector = await this.embed({ text: query })
-		const sql = searchVector(vector as unknown as string, threshold, limit, userId)
-		const res = await this.db.$queryRawTyped(sql)
+		const res = await this.db
+			.withRecursive('subquery', db => {
+				return db
+					.selectFrom('tag')
+					.select(['id', 'body'])
+					.select(sql<number>`1 - ("vector" <=> ${JSON.stringify(vector)}::vector)`.as('similarity'))
+					.where('userId', '=', userId)
+			})
+			.selectFrom('subquery')
+			.select(['id', 'body', 'similarity'])
+			.where('similarity', '>', threshold)
+			.orderBy('similarity', 'desc')
+			.limit(limit)
+			.execute()
 
 		return res
 	}
 
 	async getAll({ where, userId = this.userId }: { where?: { tags: string[] }; userId: string }) {
-		const relations = await this.db.relationship.findMany({
-			where: {
-				...(where?.tags
-					? {
-							tag: {
-								body: {
-									in: where.tags
-								}
-							}
-						}
-					: {}),
-				userId
-			},
-			select: {
-				fact: {
-					select: {
-						body: true
-					}
-				},
-				tag: {
-					select: {
-						body: true
-					}
-				}
-			}
-		})
+		const relations = await this.db
+			.selectFrom('relationship')
+			.leftJoin('fact', 'relationship.factId', 'fact.id')
+			.leftJoin('tag', 'relationship.tagId', 'tag.id')
+			.select(['fact.body as factBody', 'tag.body as tagBody'])
+			.where(expression => {
+				const conditions = expression.and([expression('relationship.userId', '=', userId)])
 
-		return relations
+				if (where?.tags && where.tags.length > 0) {
+					conditions.and('tag.body', 'in', where.tags)
+				}
+
+				return conditions
+			})
+			.execute()
+
+		const processedRelations = relations.map(relation => ({
+			fact: { body: relation.factBody || '' },
+			tag: { body: relation.tagBody || '' }
+		}))
+
+		return processedRelations
 	}
 
 	async ingest({ content, userId = this.userId }: { content: string; userId?: string }) {
@@ -219,38 +230,36 @@ export class Memory {
 
 		const combinedTagIds = [...uniqueSimilarTagIds, ...netNewTagIds]
 
-		const relatedFacts = await this.db.fact.findMany({
-			where: {
-				tags: {
-					some: {
-						tagId: {
-							in: combinedTagIds
-						}
-					}
-				}
-			},
-			select: {
-				id: true,
-				body: true
-			}
-		})
+		const relatedFacts = await this.db
+			.selectFrom('fact')
+			.innerJoin('relationship', 'fact.id', 'relationship.factId')
+			.select(['fact.id', 'fact.body'])
+			.where('relationship.tagId', 'in', combinedTagIds)
+			.distinct()
+			.execute()
 
 		console.log('relatedFacts', relatedFacts)
 
-		const {
-			object: { toDelete }
-		} = await generateObject({
-			model: openai(this.model),
-			schema: z.object({
-				toDelete: z
-					.array(
-						z.object({
-							index: z.number()
-						})
-					)
-					.optional()
-			}),
-			prompt: clean`Given the following facts and some new information, please identify any statements which have been proven wrong.
+		let toDelete: { index: number }[] = []
+		if (relatedFacts && relatedFacts.length > 0) {
+			const { object } = await generateObject({
+				model: openai(this.model),
+				schema: z.object({
+					statements: z
+						.array(
+							z.object({
+								index: z.number(),
+								shouldBeDeleted: z.boolean().default(false),
+								rationale: z
+									.string()
+									.describe('A maximum one-sentence rationale for why the statement should be deleted')
+							})
+						)
+						.default([])
+				}),
+				// TODO: this prompt/schema is not evalling well
+				prompt: clean`Given the following facts and some new information, please identify any statements which have been proven wrong.
+				Think carefully about what can be disproven, vs guessed, from the information provided.
 
 				Prior knowledge:
 				${relatedFacts.map((r, i) => `${i}. ${r.body}`).join('\n')}
@@ -258,62 +267,52 @@ export class Memory {
 				New information:
 				${facts.map(f => `- ${f}`).join('\n')}
 				
-				Chosen statements will be deleted permanently. Only pick them if certain!
+				Chosen statements will be deleted permanently. Only delete them if certain!
 				Let's do it. You've got this! 🦾
 				`
-		})
+			})
+			toDelete = object.statements.filter(s => s.shouldBeDeleted)
+		}
 
 		console.log('toDelete', toDelete)
 		console.log(`identified deletions: ${(performance.now() - start).toFixed(2)}ms`)
 
-		const updates =
-			toDelete?.flatMap(({ index }) => {
-				const outdated = relatedFacts[index]
+		await this.db.transaction().execute(async trx => {
+			const deletePromises =
+				toDelete?.flatMap(({ index }) => {
+					const outdated = relatedFacts?.[index]
+					if (!outdated) return []
 
-				if (!outdated) return []
+					return trx.deleteFrom('fact').where('id', '=', outdated.id).execute()
+				}) || []
 
-				return this.db.fact.delete({
-					where: {
-						id: outdated.id
-					}
-				})
-			}) || []
+			const createPromises = facts.flatMap(fact =>
+				combinedTagIds.flatMap(async tagId => {
+					const [createdFact] = await trx
+						.insertInto('fact')
+						.values({ id: uid(), body: fact, userId })
+						.onConflict(oc => oc.columns(['userId', 'body']).doUpdateSet({ body: fact }))
+						.returning('id')
+						.execute()
 
-		const creates = facts.flatMap(fact => {
-			return combinedTagIds.map(tagID =>
-				this.db.relationship.create({
-					data: {
-						fact: {
-							connectOrCreate: {
-								where: {
-									userId_body: {
-										body: fact,
-										userId
-									}
-								},
-								create: {
-									body: fact,
-									userId
-								}
-							}
-						},
-						tag: {
-							connect: {
-								id: tagID,
-								userId
-							}
-						},
-						userId
-					}
+					if (!createdFact) return []
+					return trx
+						.insertInto('relationship')
+						.values({
+							id: uid(),
+							factId: createdFact.id,
+							tagId,
+							userId
+						})
+						.execute()
 				})
 			)
+
+			return await Promise.all([...deletePromises, ...createPromises])
 		})
 
-		const created = await this.db.$transaction([...updates, ...creates])
-
-		console.log(chalk.green(`Added ${created?.length} facts`))
-		console.log(chalk.yellow(`Updated ${updates?.length} facts`))
-
+		console.log(chalk.green(`Added ${facts.length} facts`))
+		console.log(chalk.yellow(`Updated ${toDelete.length} facts`))
 		console.log(`Completed in ${(performance.now() - start).toFixed(2)}ms`)
 
 		return { tags, facts }
