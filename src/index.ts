@@ -67,6 +67,8 @@ export class Memory {
 			}),
 			prompt: clean`Please extract all facts from the following passage.
 				In case of first-person statements, portray the first-person as "user".
+				In case of second-person statements, refer to yourself as "system".
+				In case of third-person statements, portray the third-party directly.
 				In case of contradiction, try to capture the most up-to-date state of affairs in present tense.
 				Passage:
 				"${content}"`
@@ -117,18 +119,25 @@ export class Memory {
 		{ userId = this.userId }: { userId?: string }
 	) {
 		const tags = 'tags' in props ? props.tags : [props.tag]
-		const ids = tags.map(() => uid())
-		const vectors = await this.embed({ texts: tags })
-		const vectorStrings = vectors.map(v => JSON.stringify(v))
-		const rows = tags.map((t, i) => `('${ids[i]}', '${t}', '${vectorStrings[i]}', ${userId})`)
 
-		const template = clean`insert into tag (id, body, vector, "userId")
+		if (tags.length === 0) return []
+
+		const vectors = await this.embed({ texts: tags })
+
+		const values = tags.map((t, i) => ({
+			id: uid(),
+			body: t,
+			vector: vectors[i],
+			userId
+		}))
+
+		const rows = values.map(t => Prisma.sql`(${t.id}, ${t.body}, ${t.vector}, ${t.userId})`)
+
+		const query = Prisma.sql`insert into tag (id, body, vector, "userId")
 			values
-				${rows.join(', ')}
+				${Prisma.join(rows, ',')}
 			on conflict (body, "userId") do nothing
 			returning id`
-
-		const query = Prisma.sql([template])
 
 		const inserted: { id: string }[] = await this.db.$queryRaw(query)
 
@@ -185,6 +194,11 @@ export class Memory {
 			this.extractFacts({ content })
 		])
 
+		console.log('facts', facts)
+		console.log('tags', tags)
+
+		console.log(`extract completed: ${(performance.now() - start).toFixed(2)}ms`)
+
 		const uniqueTags = [...new Set(tags)]
 
 		const similarTagSearchRes = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
@@ -205,26 +219,19 @@ export class Memory {
 
 		const combinedTagIds = [...uniqueSimilarTagIds, ...netNewTagIds]
 
-		const relatedFacts = await this.db.relationship.findMany({
+		const relatedFacts = await this.db.fact.findMany({
 			where: {
-				tag: {
-					id: {
-						in: combinedTagIds
+				tags: {
+					some: {
+						tagId: {
+							in: combinedTagIds
+						}
 					}
 				}
 			},
 			select: {
 				id: true,
-				fact: {
-					select: {
-						body: true
-					}
-				},
-				tag: {
-					select: {
-						body: true
-					}
-				}
+				body: true
 			}
 		})
 
@@ -233,7 +240,7 @@ export class Memory {
 		const {
 			object: { corrections }
 		} = await generateObject({
-			model: openai(this.model),
+			model: openai('gpt-4o-2024-08-06'),
 			schema: z.object({
 				corrections: z
 					.array(
@@ -244,11 +251,11 @@ export class Memory {
 					)
 					.optional()
 			}),
-			prompt: clean`Given the following statements and some new information, please identify any statements which have been falsified.
+			prompt: clean`Given the following statements and some new information, please identify any statements which have been strictly falsified.
 
 				Prior statements:
 				"""
-				${relatedFacts.map((r, i) => `${i}. ${r.fact.body}`).join('\n')}
+				${relatedFacts.map((r, i) => `${i}. ${r.body}`).join('\n')}
 				"""
 
 				New information:
@@ -256,7 +263,7 @@ export class Memory {
 				${facts.map(f => `- ${f}`).join('\n')}
 				"""
 				
-				It is not always necessary to update the returned statements.
+				New information will be appended by default.
 				`
 		})
 
@@ -269,16 +276,12 @@ export class Memory {
 
 				if (!outdated) return []
 
-				return this.db.relationship.update({
+				return this.db.fact.update({
 					where: {
 						id: outdated.id
 					},
 					data: {
-						fact: {
-							update: {
-								body: newStatement
-							}
-						}
+						body: newStatement
 					}
 				})
 			}) || []
@@ -316,6 +319,7 @@ export class Memory {
 		const created = await this.db.$transaction([...updates, ...creates])
 
 		console.log(chalk.green(`Added ${created?.length} facts`))
+		console.log(chalk.yellow(`Updated ${updates?.length} facts`))
 
 		console.log(`Completed in ${(performance.now() - start).toFixed(2)}ms`)
 

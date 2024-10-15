@@ -1,3 +1,4 @@
+- [2024-10-15] [Prompt eng and handle errors](https://github.com/RubricLab/memory/commit/fd5267164d4af76b0ec26846cb0f54f906825f82)
 - [2024-10-15] [Remove user filter](https://github.com/RubricLab/memory/commit/a879c56559e8cbbd82b317ed53d8c49cf0aab98d)
 - [2024-10-15] [Parallelize embedding, upsertion, and update for perf](https://github.com/RubricLab/memory/commit/38f574d2ba7c00f74f9a97a8e21e05315b47f118)
 - [2024-10-15] [Clean up](https://github.com/RubricLab/memory/commit/0d5f66305ae9c973f7667576b8b7a966c67acbd7)
