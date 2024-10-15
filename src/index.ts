@@ -10,7 +10,7 @@ import {
 import { generateObject } from 'ai'
 import chalk from 'chalk'
 import { z } from 'zod'
-import { type Database, type LLM, Tag } from './types'
+import type { Database, LLM } from './types'
 import { clean } from './utils/string'
 import { uid } from './utils/uid'
 
@@ -188,7 +188,7 @@ export class Memory {
 		const uniqueTags = [...new Set(tags)]
 
 		const similarTagSearchRes = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
-		const similarTags = similarTagSearchRes.flat().filter(s => s.body !== Tag.User)
+		const similarTags = similarTagSearchRes.flat()
 
 		console.log(`search completed: ${(performance.now() - start).toFixed(2)}ms`)
 
