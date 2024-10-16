@@ -1,3 +1,4 @@
+- [2024-10-16] [Move pg (not Mr Graham) to runtime dependencies](https://github.com/RubricLab/memory/commit/da11d66302671f11119f1b17343b1449e7c51a95)
 - [2024-10-15] [Add missing dep](https://github.com/RubricLab/memory/commit/9b0ce49f7a873fa1745d9e262e23405c04a5913e)
 - [2024-10-15] [Trigger release](https://github.com/RubricLab/memory/commit/b737b478caadd3c5a57cf0aa1e75bab81804819e)
 - [2024-10-15] [Replace Prisma with Kysely](https://github.com/RubricLab/memory/commit/fed6f2022cb78052d4afbb1c63d95f40e7e01832)

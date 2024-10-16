@@ -2,13 +2,12 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "private": false,
   "type": "module",
   "devDependencies": {
     "@types/bun": "^1.1.10",
-    "kysely-codegen": "^0.16.8",
-    "pg": "^8.13.0"
+    "kysely-codegen": "^0.16.8"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -18,6 +17,7 @@
     "@rubriclab/config": "*",
     "@rubriclab/package": "*",
     "@t3-oss/env-nextjs": "^0.11.1",
+    "pg": "^8.13.0",
     "ai": "^3.4.9",
     "chalk": "^5.3.0",
     "kysely": "^0.27.4",
