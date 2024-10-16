@@ -313,6 +313,7 @@ export class Memory {
 
 		console.log(chalk.green(`Added ${facts.length} facts`))
 		console.log(chalk.yellow(`Updated ${toDelete.length} facts`))
+
 		console.log(`Completed in ${(performance.now() - start).toFixed(2)}ms`)
 
 		return { tags, facts }

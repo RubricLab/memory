@@ -1,3 +1,4 @@
+- [2024-10-15] [Trigger release](https://github.com/RubricLab/memory/commit/b737b478caadd3c5a57cf0aa1e75bab81804819e)
 - [2024-10-15] [Replace Prisma with Kysely](https://github.com/RubricLab/memory/commit/fed6f2022cb78052d4afbb1c63d95f40e7e01832)
 - [2024-10-15] [Remove temp type](https://github.com/RubricLab/memory/commit/7edd19d51c8b3d0d9f8625e996e4818614e731dd)
 - [2024-10-15] [Improve editing ability](https://github.com/RubricLab/memory/commit/c4e105be1a85152af88e77c9b41ef061660e7138)
