@@ -2,11 +2,12 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "private": false,
   "type": "module",
   "devDependencies": {
     "@types/bun": "^1.1.10",
+    "@types/pg": "^8.11.10",
     "kysely-codegen": "^0.16.8"
   },
   "peerDependencies": {
