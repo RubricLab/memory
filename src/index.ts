@@ -158,12 +158,20 @@ export class Memory {
 			.withRecursive('subquery', db => {
 				return db
 					.selectFrom('tag')
-					.select(['id', 'body'])
-					.select(sql<number>`1 - ("vector" <=> ${JSON.stringify(vector)}::vector)`.as('similarity'))
-					.where('userId', '=', userId)
+					.innerJoin('relationship', 'relationship.tagId', 'tag.id')
+					.innerJoin('fact', 'fact.id', 'relationship.factId')
+					.select([
+						'tag.id as tagId',
+						'tag.body as tagBody',
+						'fact.id as factId',
+						'fact.body as factBody',
+						sql<number>`1 - (tag.vector <=> ${JSON.stringify(vector)}::vector)`.as('similarity')
+					])
+					.where('relationship.userId', '=', userId)
+					.where('tag.vector', 'is not', null)
 			})
 			.selectFrom('subquery')
-			.select(['id', 'body', 'similarity'])
+			.selectAll()
 			.where('similarity', '>', threshold)
 			.orderBy('similarity', 'desc')
 			.limit(limit)
@@ -217,10 +225,10 @@ export class Memory {
 
 		console.log(`search completed: ${(performance.now() - start).toFixed(2)}ms`)
 
-		const uniqueSimilarTagIds = [...new Set(similarTags.map(s => s.id))]
+		const uniqueSimilarTagIds = [...new Set(similarTags.map(s => s.tagId))]
 		console.log('similarTags', similarTags)
 
-		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s?.body === t))
+		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s?.tagBody === t))
 		console.log('netNewTags', netNewTags)
 
 		const tagsInserted = await this.insert({ tags: netNewTags }, { userId })
