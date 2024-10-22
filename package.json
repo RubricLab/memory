@@ -2,7 +2,7 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.41",
+  "version": "0.0.42",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -38,7 +38,7 @@
   "scripts": {
     "postinstall": "bun db:generate",
     "prepare": "bun x simple-git-hooks",
-    "db:generate": "kysely-codegen --include-pattern='public.*'",
+    "db:generate": "bun x kysely-codegen --include-pattern='public.*'",
     "bleed": "bun x npm-check-updates -u",
     "clean": "rm -rf .next && rm -rf node_modules",
     "format": "bun x biome format --write .",
