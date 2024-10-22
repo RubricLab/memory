@@ -72,16 +72,17 @@ export class Memory {
 					})
 				)
 			}),
-			prompt: clean`Please extract all facts from the following passage.
+			prompt: clean`Please extract interesting facts from the following passage if they teach us something about the user.
 				In case of first-person statements, portray the first-person as "user".
 				In case of second-person statements, refer to yourself as "system".
 				In case of third-person statements, portray the third-party directly.
 				In case of contradiction, try to capture the most up-to-date state of affairs in present tense.
+				In the case where no new information is to be gained or the user is simply asking a question, please respond with an empty array.
 				Passage:
 				"${content}"`
 		})
 
-		return { facts: facts.map(({ body }) => body) }
+		return { facts: facts?.map(({ body }) => body) }
 	}
 
 	async extractTags({ content }: { content: string }): Promise<{ tags: string[] }> {
@@ -266,17 +267,18 @@ export class Memory {
 						.default([])
 				}),
 				// TODO: this prompt/schema is not evalling well
-				prompt: clean`Given the following facts and some new information, please identify any statements which have been proven wrong.
-				Think carefully about what can be disproven, vs guessed, from the information provided.
+				prompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
+				You should only delete facts that have been overwritten by the new facts.
+				This means it is common to not delete anything.
 
-				Prior knowledge:
+				Existing facts:
 				${relatedFacts.map((r, i) => `${i}. ${r.body}`).join('\n')}
 
 				New information:
 				${facts.map(f => `- ${f}`).join('\n')}
 				
 				Chosen statements will be deleted permanently. Only delete them if certain!
-				Let's do it. You've got this! 🦾
+				Take a breath. Let's think this through.
 				`
 			})
 			toDelete = object.statements.filter(s => s.shouldBeDeleted)

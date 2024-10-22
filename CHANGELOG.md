@@ -1,3 +1,4 @@
+- [2024-10-22] [Prompt eng deletions and skips](https://github.com/RubricLab/memory/commit/faa1c882d7ee8e7ff0acf36b192f7b98e81a3818)
 - [2024-10-22] [Return facts with tags](https://github.com/RubricLab/memory/commit/8d894a20b2766e90f9c1ea8d1e4c7bfa04e99c28)
 - [2024-10-22] [oai dep](https://github.com/RubricLab/memory/commit/e1a3c68f9c172d880bc2852680c97dac083ecaae)
 - [2024-10-16] [Add PG types](https://github.com/RubricLab/memory/commit/0c5c10da97c1730b8556e00ac14fadb7f8665344)
