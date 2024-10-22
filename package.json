@@ -2,7 +2,7 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "private": false,
   "type": "module",
   "devDependencies": {

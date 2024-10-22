@@ -219,14 +219,14 @@ export class Memory {
 
 		console.log(`extract completed: ${(performance.now() - start).toFixed(2)}ms`)
 
-		const uniqueTags = [...new Set(tags)]
+		const uniqueTags = Array.from(new Set(tags))
 
 		const similarTagSearchRes = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
 		const similarTags = similarTagSearchRes.flat()
 
 		console.log(`search completed: ${(performance.now() - start).toFixed(2)}ms`)
 
-		const uniqueSimilarTagIds = [...new Set(similarTags.map(s => s.tagId))]
+		const uniqueSimilarTagIds = Array.from(new Set(similarTags.map(s => s.tagId)))
 		console.log('similarTags', similarTags)
 
 		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s?.tagBody === t))
