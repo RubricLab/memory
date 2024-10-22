@@ -1,3 +1,4 @@
+- [2024-10-22] [DB generate on postinstall](https://github.com/RubricLab/memory/commit/2aef7c241b719d7baba6dc5daef6d53407540b60)
 - [2024-10-22] [Bleed OpenAI](https://github.com/RubricLab/memory/commit/8f9ad0f4af1362c92b596817755ef5ed4afd3c98)
 - [2024-10-22] [Use old ES-compatible Set spread](https://github.com/RubricLab/memory/commit/75a93b6fa36f295e66461d204cdc9e5ee9b00fcc)
 - [2024-10-22] [Prompt eng deletions and skips](https://github.com/RubricLab/memory/commit/faa1c882d7ee8e7ff0acf36b192f7b98e81a3818)

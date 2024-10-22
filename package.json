@@ -2,7 +2,7 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.40",
+  "version": "0.0.41",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -36,6 +36,7 @@
     "schema": "./prisma/schema"
   },
   "scripts": {
+    "postinstall": "bun db:generate",
     "prepare": "bun x simple-git-hooks",
     "db:generate": "kysely-codegen --include-pattern='public.*'",
     "bleed": "bun x npm-check-updates -u",
