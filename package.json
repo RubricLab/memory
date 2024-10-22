@@ -2,7 +2,7 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -14,7 +14,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.66",
+    "@ai-sdk/openai": "^0.0.68",
     "@rubriclab/config": "*",
     "@rubriclab/package": "*",
     "@t3-oss/env-nextjs": "^0.11.1",
