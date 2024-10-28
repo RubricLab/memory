@@ -229,7 +229,9 @@ export class Memory {
 		const uniqueSimilarTagIds = Array.from(new Set(similarTags.map(s => s.tagId)))
 		console.log('similarTags', similarTags)
 
-		const netNewTags = uniqueTags.filter(t => !similarTags.some(s => s?.tagBody === t))
+		const netNewTags = uniqueTags.filter(
+			t => !similarTags.some(s => s?.tagBody.toLowerCase() === t.toLowerCase())
+		)
 		console.log('netNewTags', netNewTags)
 
 		const tagsInserted = await this.insert({ tags: netNewTags }, { userId })

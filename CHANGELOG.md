@@ -1,3 +1,4 @@
+- [2024-10-28] [Loosen requirement on tag match](https://github.com/RubricLab/memory/commit/691545e6a012c6f0a7263dbc4d2ceff9837dc3fd)
 - [2024-10-24] [add notify-monorepo action](https://github.com/RubricLab/memory/commit/53d286bb680f8785ebd63806f5bc2a4514ec9bbc)
 - [2024-10-22] [Bun x kysely codegen](https://github.com/RubricLab/memory/commit/d0dfa75f9bc720454301e751d91bf8410e7d60f5)
 - [2024-10-22] [DB generate on postinstall](https://github.com/RubricLab/memory/commit/2aef7c241b719d7baba6dc5daef6d53407540b60)
