@@ -220,21 +220,59 @@ export class Memory {
 		console.log(`extract completed: ${(performance.now() - start).toFixed(2)}ms`)
 
 		const uniqueTags = Array.from(new Set(tags))
-
 		const similarTagSearchRes = await Promise.all(uniqueTags.map(tag => this.search(tag, { userId })))
-		const similarTags = similarTagSearchRes.flat()
-
 		console.log(`search completed: ${(performance.now() - start).toFixed(2)}ms`)
 
-		const uniqueSimilarTagIds = Array.from(new Set(similarTags.map(s => s.tagId)))
+		const similarTags = similarTagSearchRes.flat()
 		console.log('similarTags', similarTags)
 
-		const netNewTags = uniqueTags.filter(
-			t => !similarTags.some(s => s?.tagBody.toLowerCase() === t.toLowerCase())
-		)
-		console.log('netNewTags', netNewTags)
+		const uniqueSimilarTagIds = Array.from(new Set(similarTags.map(s => s.tagId)))
 
-		const tagsInserted = await this.insert({ tags: netNewTags }, { userId })
+		// Add duplicate detection
+		const {
+			object: { duplicates }
+		} = await generateObject({
+			model: openai(this.model),
+			schema: z.object({
+				duplicates: z.array(
+					z.object({
+						newTag: z.string(),
+						existingTag: z.string(),
+						confidence: z.number().min(0).max(1)
+					})
+				)
+			}),
+			prompt: clean`Please identify any duplicate tags from the following lists, accounting for variations in spelling, nicknames, or formatting.
+				Only mark as duplicates if you are highly confident they refer to the same entity.
+				
+				Existing tags:
+				${similarTags.map(s => s.tagBody).join('\n')}
+				
+				New tags:
+				${uniqueTags.join('\n')}
+				
+				Return pairs of duplicates with a confidence score.
+				A confidence of 0.9+ means very likely match (e.g., "NYC" vs "New York City")`
+		})
+
+		const CONFIDENCE_THRESHOLD = 0.5
+
+		// Filter out duplicates, keeping existing tags when there's a match
+		const netNewTags = uniqueTags.filter(
+			t =>
+				!similarTags.some(s => s.tagBody.toLowerCase() === t.toLowerCase()) && // exact match check
+				!duplicates.some(d => d.newTag === t && d.confidence >= CONFIDENCE_THRESHOLD) // AI-detected duplicate check
+		)
+
+		// Replace any remaining new tags with their existing versions if they're duplicates
+		const finalTags = netNewTags.map(tag => {
+			const duplicate = duplicates.find(d => d.newTag === tag && d.confidence >= CONFIDENCE_THRESHOLD)
+			return duplicate ? duplicate.existingTag : tag
+		})
+
+		console.log('netNewTags', finalTags)
+
+		const tagsInserted = await this.insert({ tags: finalTags }, { userId })
 		const netNewTagIds = tagsInserted.map(t => t.id)
 
 		console.log(`insert completed: ${(performance.now() - start).toFixed(2)}ms`)
@@ -268,7 +306,6 @@ export class Memory {
 						)
 						.default([])
 				}),
-				// TODO: this prompt/schema is not evalling well
 				prompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
 				You should only delete facts that have been overwritten by the new facts.
 				This means it is common to not delete anything.
