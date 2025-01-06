@@ -1,3 +1,4 @@
+- [2025-01-06] [Bump PG types to prod deps](https://github.com/RubricLab/memory/commit/65d9dd2b35d5a2d1e7fd24f963b594a42223c265)
 - [2024-11-08] [Deduplicate tags](https://github.com/RubricLab/memory/commit/f310bf6ca22d794764fe470e54687025be81137b)
 - [2024-10-28] [Loosen requirement on tag match](https://github.com/RubricLab/memory/commit/691545e6a012c6f0a7263dbc4d2ceff9837dc3fd)
 - [2024-10-24] [add notify-monorepo action](https://github.com/RubricLab/memory/commit/53d286bb680f8785ebd63806f5bc2a4514ec9bbc)
