@@ -2,7 +2,7 @@
   "name": "@rubriclab/memory",
   "module": "src/index.ts",
   "main": "src/index.ts",
-  "version": "0.0.46",
+  "version": "0.0.47",
   "private": false,
   "type": "module",
   "devDependencies": {
@@ -24,7 +24,7 @@
     "nanoid": "^5.0.7",
     "openai": "^4.68.1",
     "pg": "^8.13.0",
-    "zod": "^3.23.8"
+    "zod": "3.24.2"
   },
   "simple-git-hooks": {
     "post-commit": "bun run rubriclab-postcommit"
