@@ -1,3 +1,4 @@
+- [2025-06-01] [Remove Kysely introspection](https://github.com/RubricLab/memory/commit/6a2060b3283fa712938b5653ac84ac6f99d83254)
 - [2025-06-01] [Bleed deps and default model](https://github.com/RubricLab/memory/commit/c43d4c054fe1d7d2a013a3b662e68d6bc6228fc8)
 - [2025-04-07] [bump zod](https://github.com/RubricLab/memory/commit/b7200c75c726a07b6e503e48fc52cd48333d4ffd)
 - [2025-01-06] [Bump PG types to prod deps](https://github.com/RubricLab/memory/commit/65d9dd2b35d5a2d1e7fd24f963b594a42223c265)
