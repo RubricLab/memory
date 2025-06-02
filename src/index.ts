@@ -32,7 +32,7 @@ export class Memory {
 	}
 
 	constructor({
-		model = 'gpt-4o-mini',
+		model = 'gpt-4.1-mini',
 		db = new Kysely<Schema>({
 			dialect: new PostgresDialect({
 				pool: new Pool({
