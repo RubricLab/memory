@@ -1,47 +1,47 @@
 {
-  "name": "@rubriclab/memory",
-  "module": "src/index.ts",
-  "main": "src/index.ts",
-  "version": "0.0.49",
-  "private": false,
-  "type": "module",
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.15"
-  },
-  "dependencies": {
-    "@ai-sdk/openai": "^1.3.22",
-    "@rubriclab/config": "*",
-    "@rubriclab/package": "*",
-    "@t3-oss/env-nextjs": "^0.11.1",
-    "@types/pg": "^8.15.4",
-    "ai": "^4.3.16",
-    "chalk": "^5.4.1",
-    "kysely": "^0.28.2",
-    "nanoid": "^5.1.5",
-    "openai": "^5.0.1",
-    "pg": "^8.16.0",
-    "zod": "3.24.2"
-  },
-  "simple-git-hooks": {
-    "post-commit": "bun run rubriclab-postcommit"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "prisma": {
-    "schema": "./prisma/schema"
-  },
-  "scripts": {
-    "prepare": "bun x simple-git-hooks",
-    "db:generate": "bun x kysely-codegen --include-pattern='public.*'",
-    "bleed": "bun x npm-check-updates -u",
-    "clean": "rm -rf .next && rm -rf node_modules",
-    "format": "bun x biome format --write .",
-    "eval": "bun src/evals/index.ts",
-    "lint": "bun x biome check . && bun x biome lint .",
-    "lint:fix": "bun x biome check --fix --unsafe . && bun x biome lint --write --unsafe ."
-  }
+	"name": "@rubriclab/memory",
+	"module": "src/index.ts",
+	"main": "src/index.ts",
+	"version": "0.0.49",
+	"private": false,
+	"type": "module",
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.2.15"
+	},
+	"dependencies": {
+		"@ai-sdk/openai": "^1.3.22",
+		"@rubriclab/config": "*",
+		"@rubriclab/package": "*",
+		"@t3-oss/env-nextjs": "^0.11.1",
+		"@types/pg": "^8.15.4",
+		"ai": "^4.3.16",
+		"chalk": "^5.4.1",
+		"kysely": "^0.28.2",
+		"nanoid": "^5.1.5",
+		"openai": "^5.0.1",
+		"pg": "^8.16.0",
+		"zod": "3.24.2"
+	},
+	"simple-git-hooks": {
+		"post-commit": "bun x @rubriclab/package post-commit"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"prisma": {
+		"schema": "./prisma/schema"
+	},
+	"scripts": {
+		"prepare": "bun x @rubriclab/package prepare",
+		"db:generate": "bun x kysely-codegen --include-pattern='public.*'",
+		"bleed": "bun x npm-check-updates -u",
+		"clean": "rm -rf .next && rm -rf node_modules",
+		"format": "bun x biome format --write .",
+		"eval": "bun src/evals/index.ts",
+		"lint": "bun x biome check . && bun x biome lint .",
+		"lint:fix": "bun x biome check --fix --unsafe . && bun x biome lint --write --unsafe ."
+	}
 }
