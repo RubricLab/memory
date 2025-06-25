@@ -1,3 +1,4 @@
+- [2025-06-25] [Trigger version bump](https://github.com/RubricLab/memory/commit/210ddb2d2901fbccd2ab6023007f93a6365c1833)
 - [2025-06-01] [Remove Kysely introspection](https://github.com/RubricLab/memory/commit/6a2060b3283fa712938b5653ac84ac6f99d83254)
 - [2025-06-01] [Bleed deps and default model](https://github.com/RubricLab/memory/commit/c43d4c054fe1d7d2a013a3b662e68d6bc6228fc8)
 - [2025-04-07] [bump zod](https://github.com/RubricLab/memory/commit/b7200c75c726a07b6e503e48fc52cd48333d4ffd)

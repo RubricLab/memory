@@ -2,7 +2,7 @@
 	"name": "@rubriclab/memory",
 	"module": "src/index.ts",
 	"main": "src/index.ts",
-	"version": "0.0.49",
+	"version": "0.0.50",
 	"private": false,
 	"type": "module",
 	"peerDependencies": {
@@ -25,11 +25,11 @@
 		"pg": "^8.16.0",
 		"zod": "3.24.2"
 	},
-	"simple-git-hooks": {
-		"post-commit": "bun x @rubriclab/package post-commit"
-	},
 	"publishConfig": {
 		"access": "public"
+	},
+	"simple-git-hooks": {
+		"post-commit": "bun x @rubriclab/package post-commit"
 	},
 	"prisma": {
 		"schema": "./prisma/schema"
