@@ -1,3 +1,4 @@
+- [2025-07-01] [run format](https://github.com/RubricLab/memory/commit/a56a01e61013aec1f091bfb668d2ddce56e226c8)
 - [2025-07-01] [consolidate biome format script](https://github.com/RubricLab/memory/commit/c8e4d8c76466d46e3fb1a5c7f4237092c389c733)
 - [2025-06-25] [Trigger version bump](https://github.com/RubricLab/memory/commit/210ddb2d2901fbccd2ab6023007f93a6365c1833)
 - [2025-06-01] [Remove Kysely introspection](https://github.com/RubricLab/memory/commit/6a2060b3283fa712938b5653ac84ac6f99d83254)

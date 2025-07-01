@@ -1,11 +1,11 @@
-import { Memory } from '@/index'
-import type { Database, LLM } from '@/types'
 // import { format } from '@/utils/string'
 import chalk from 'chalk'
+import { Memory } from '@/index'
+import type { Database, LLM } from '@/types'
 import { EXAMPLES } from './examples'
 
 export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Database }) => {
-	const memory = new Memory({ model, db })
+	const memory = new Memory({ db, model })
 
 	let totalFacts = 0
 	let totalRecall = 0
@@ -22,7 +22,7 @@ export const runMultiTurnExamples = async ({ db, model }: { model: LLM; db: Data
 			console.log(chalk.yellow(`\n\n"${message.content}"`))
 
 			// Clean up DB in between conversations
-			const omitted: number[] = []
+			// const omitted: number[] = []
 
 			const { facts: attempts } = await memory.ingest({
 				content: message.content

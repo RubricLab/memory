@@ -1,24 +1,23 @@
 import { parseArgs } from 'node:util'
+import { PrismaClient } from '@prisma/client'
 import { runMultiTurnExamples } from '@/evals/multi-turn'
 import type { Database } from '@/types'
-import { PrismaClient } from '@prisma/client'
 
 const db: Database = new PrismaClient()
 
 const args = parseArgs({
+	allowPositionals: true,
 	args: Bun.argv,
 	options: {
-		sota: {
-			type: 'boolean',
-			default: false
-		},
-
 		help: {
-			type: 'boolean',
-			default: false
+			default: false,
+			type: 'boolean'
+		},
+		sota: {
+			default: false,
+			type: 'boolean'
 		}
-	},
-	allowPositionals: true
+	}
 })
 
 if (import.meta.path === Bun.main) {

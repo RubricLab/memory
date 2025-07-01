@@ -1,16 +1,4 @@
 {
-	"name": "@rubriclab/memory",
-	"module": "src/index.ts",
-	"main": "src/index.ts",
-	"version": "0.0.51",
-	"private": false,
-	"type": "module",
-	"peerDependencies": {
-		"typescript": "^5.0.0"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.2.15"
-	},
 	"dependencies": {
 		"@ai-sdk/openai": "^1.3.22",
 		"@rubriclab/config": "*",
@@ -25,21 +13,33 @@
 		"pg": "^8.16.0",
 		"zod": "3.24.2"
 	},
-	"publishConfig": {
-		"access": "public"
+	"devDependencies": {
+		"@types/bun": "^1.2.15"
 	},
-	"simple-git-hooks": {
-		"post-commit": "bun x @rubriclab/package post-commit"
+	"main": "src/index.ts",
+	"module": "src/index.ts",
+	"name": "@rubriclab/memory",
+	"peerDependencies": {
+		"typescript": "^5.0.0"
 	},
 	"prisma": {
 		"schema": "./prisma/schema"
 	},
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
-		"prepare": "bun x @rubriclab/package prepare",
-		"db:generate": "bun x kysely-codegen --include-pattern='public.*'",
 		"bleed": "bun x npm-check-updates -u",
 		"clean": "rm -rf .next && rm -rf node_modules",
+		"db:generate": "bun x kysely-codegen --include-pattern='public.*'",
 		"eval": "bun src/evals/index.ts",
-		"format": "bun x biome check . --write"
-	}
+		"format": "bun x biome check . --write",
+		"prepare": "bun x @rubriclab/package prepare"
+	},
+	"simple-git-hooks": {
+		"post-commit": "bun x @rubriclab/package post-commit"
+	},
+	"type": "module",
+	"version": "0.0.52"
 }

@@ -11,9 +11,9 @@ export const EXAMPLES: Example[] = [
 				content: 'I am vegan',
 				facts: [
 					{
-						subject: 'user',
+						object: 'vegan',
 						relation: 'is',
-						object: 'vegan'
+						subject: 'user'
 					}
 				]
 			},
@@ -21,14 +21,14 @@ export const EXAMPLES: Example[] = [
 				content: 'I now eat meat',
 				facts: [
 					{
-						subject: 'user',
+						object: 'vegan',
 						relation: 'is not',
-						object: 'vegan'
+						subject: 'user'
 					},
 					{
-						subject: 'user',
+						object: 'meat',
 						relation: 'eats',
-						object: 'meat'
+						subject: 'user'
 					}
 				]
 			}
@@ -40,14 +40,14 @@ export const EXAMPLES: Example[] = [
 				content: 'I went to Balthazar with George on the 10th of March 2024',
 				facts: [
 					{
-						subject: 'user',
+						object: 'Balthazar',
 						relation: 'went to',
-						object: 'Balthazar'
+						subject: 'user'
 					},
 					{
-						subject: 'user',
+						object: 'George',
 						relation: 'went with',
-						object: 'George'
+						subject: 'user'
 					}
 				]
 			},
@@ -55,9 +55,9 @@ export const EXAMPLES: Example[] = [
 				content: 'George liked the food',
 				facts: [
 					{
-						subject: 'George',
+						object: 'Balthazar',
 						relation: 'liked',
-						object: 'Balthazar'
+						subject: 'George'
 					}
 				]
 			}
@@ -69,9 +69,9 @@ export const EXAMPLES: Example[] = [
 				content: 'I have a cousin named Suzy',
 				facts: [
 					{
-						subject: 'user',
+						object: 'Suzy',
 						relation: 'has a cousin named',
-						object: 'Suzy'
+						subject: 'user'
 					}
 				]
 			},
@@ -79,9 +79,9 @@ export const EXAMPLES: Example[] = [
 				content: 'Suzy does not like cranberries',
 				facts: [
 					{
-						subject: 'Suzy',
+						object: 'cranberries',
 						relation: 'does not like',
-						object: 'cranberries'
+						subject: 'Suzy'
 					}
 				]
 			}

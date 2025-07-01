@@ -65,13 +65,6 @@ export class Memory {
 			object: { facts }
 		} = await generateObject({
 			model: openai(this.model),
-			schema: z.object({
-				facts: z.array(
-					z.object({
-						body: z.string()
-					})
-				)
-			}),
 			prompt: clean`Please extract interesting facts from the following passage if they teach us something about the user.
 				In case of first-person statements, portray the first-person as "user".
 				In case of second-person statements, refer to yourself as "system".
@@ -79,7 +72,14 @@ export class Memory {
 				In case of contradiction, try to capture the most up-to-date state of affairs in present tense.
 				In the case where no new information is to be gained or the user is simply asking a question, please respond with an empty array.
 				Passage:
-				"${content}"`
+				"${content}"`,
+			schema: z.object({
+				facts: z.array(
+					z.object({
+						body: z.string()
+					})
+				)
+			})
 		})
 
 		return { facts: facts?.map(({ body }) => body) }
@@ -90,13 +90,13 @@ export class Memory {
 			object: { entities: tags }
 		} = await generateObject({
 			model: openai(this.model),
-			schema: z.object({
-				entities: z.array(z.string())
-			}),
 			prompt: clean`Please extract all entities (subjects, objects, and general metaphysical concepts) from the following passage.
 				In case of first-person statements, portray the first-person as "user".
 				Passage:
-				"${content}"`
+				"${content}"`,
+			schema: z.object({
+				entities: z.array(z.string())
+			})
 		})
 
 		return { tags }
@@ -133,10 +133,10 @@ export class Memory {
 		const vectors = await this.embed({ texts: tags })
 
 		const values = tags.map((t, i) => ({
-			id: uid(),
 			body: t,
-			vector: JSON.stringify(vectors[i]),
-			userId
+			id: uid(),
+			userId,
+			vector: JSON.stringify(vectors[i])
 		}))
 
 		const inserted = await this.db
@@ -233,15 +233,6 @@ export class Memory {
 			object: { duplicates }
 		} = await generateObject({
 			model: openai(this.model),
-			schema: z.object({
-				duplicates: z.array(
-					z.object({
-						newTag: z.string(),
-						existingTag: z.string(),
-						confidence: z.number().min(0).max(1)
-					})
-				)
-			}),
 			prompt: clean`Please identify any duplicate tags from the following lists, accounting for variations in spelling, nicknames, or formatting.
 				Only mark as duplicates if you are highly confident they refer to the same entity.
 				
@@ -252,7 +243,16 @@ export class Memory {
 				${uniqueTags.join('\n')}
 				
 				Return pairs of duplicates with a confidence score.
-				A confidence of 0.9+ means very likely match (e.g., "NYC" vs "New York City")`
+				A confidence of 0.9+ means very likely match (e.g., "NYC" vs "New York City")`,
+			schema: z.object({
+				duplicates: z.array(
+					z.object({
+						confidence: z.number().min(0).max(1),
+						existingTag: z.string(),
+						newTag: z.string()
+					})
+				)
+			})
 		})
 
 		const CONFIDENCE_THRESHOLD = 0.5
@@ -293,19 +293,6 @@ export class Memory {
 		if (relatedFacts && relatedFacts.length > 0) {
 			const { object } = await generateObject({
 				model: openai(this.model),
-				schema: z.object({
-					statements: z
-						.array(
-							z.object({
-								index: z.number(),
-								shouldBeDeleted: z.boolean().default(false),
-								rationale: z
-									.string()
-									.describe('A maximum one-sentence rationale for why the statement should be deleted')
-							})
-						)
-						.default([])
-				}),
 				prompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
 				You should only delete facts that have been overwritten by the new facts.
 				This means it is common to not delete anything.
@@ -318,7 +305,20 @@ export class Memory {
 				
 				Chosen statements will be deleted permanently. Only delete them if certain!
 				Take a breath. Let's think this through.
-				`
+				`,
+				schema: z.object({
+					statements: z
+						.array(
+							z.object({
+								index: z.number(),
+								rationale: z
+									.string()
+									.describe('A maximum one-sentence rationale for why the statement should be deleted'),
+								shouldBeDeleted: z.boolean().default(false)
+							})
+						)
+						.default([])
+				})
 			})
 			toDelete = object.statements.filter(s => s.shouldBeDeleted)
 		}
@@ -339,7 +339,7 @@ export class Memory {
 				combinedTagIds.flatMap(async tagId => {
 					const [createdFact] = await trx
 						.insertInto('fact')
-						.values({ id: uid(), body: fact, userId })
+						.values({ body: fact, id: uid(), userId })
 						.onConflict(oc => oc.columns(['userId', 'body']).doUpdateSet({ body: fact }))
 						.returning('id')
 						.execute()
@@ -348,8 +348,8 @@ export class Memory {
 					return trx
 						.insertInto('relationship')
 						.values({
-							id: uid(),
 							factId: createdFact.id,
+							id: uid(),
 							tagId,
 							userId
 						})
@@ -365,6 +365,6 @@ export class Memory {
 
 		console.log(`Completed in ${(performance.now() - start).toFixed(2)}ms`)
 
-		return { tags, facts }
+		return { facts, tags }
 	}
 }
