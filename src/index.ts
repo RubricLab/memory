@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai'
-import { generateObject } from 'ai'
+import { type ChatModel, generateObject } from '@rubriclab/agents'
 import chalk from 'chalk'
 import { Kysely, PostgresDialect, sql } from 'kysely'
 import { Pool } from 'pg'
@@ -61,11 +61,10 @@ export class Memory {
 	}
 
 	async extractFacts({ content }: { content: string }): Promise<{ facts: string[] }> {
-		const {
-			object: { facts }
-		} = await generateObject({
-			model: openai(this.model),
-			prompt: clean`Please extract interesting facts from the following passage if they teach us something about the user.
+		const { facts } = await generateObject({
+			model: this.model as ChatModel,
+			apiKey: env.OPENAI_API_KEY,
+			systemPrompt: clean`Please extract interesting facts from the following passage if they teach us something about the user.
 				In case of first-person statements, portray the first-person as "user".
 				In case of second-person statements, refer to yourself as "system".
 				In case of third-person statements, portray the third-party directly.
@@ -86,14 +85,13 @@ export class Memory {
 	}
 
 	async extractTags({ content }: { content: string }): Promise<{ tags: string[] }> {
-		const {
-			object: { entities: tags }
-		} = await generateObject({
-			model: openai(this.model),
-			prompt: clean`Please extract all entities (subjects, objects, and general metaphysical concepts) from the following passage.
+		const { entities: tags } = await generateObject({
+			model: this.model as ChatModel,
+			systemPrompt: clean`Please extract all entities (subjects, objects, and general metaphysical concepts) from the following passage.
 				In case of first-person statements, portray the first-person as "user".
 				Passage:
 				"${content}"`,
+			apiKey: env.OPENAI_API_KEY,
 			schema: z.object({
 				entities: z.array(z.string())
 			})
@@ -107,11 +105,7 @@ export class Memory {
 	async embed(props: { text: string } | { texts: string[] }) {
 		const texts = 'texts' in props ? props.texts : [props.text]
 
-		const res = await openai
-			.embedding(this.embeddingsModel, {
-				dimensions: this.embeddingsDimension
-			})
-			.doEmbed({ values: texts })
+		const res = await openai.embedding(this.embeddingsModel).doEmbed({ values: texts })
 
 		if (!res) throw 'Failed to reach embeddings API'
 
@@ -229,11 +223,10 @@ export class Memory {
 		const uniqueSimilarTagIds = Array.from(new Set(similarTags.map(s => s.tagId)))
 
 		// Add duplicate detection
-		const {
-			object: { duplicates }
-		} = await generateObject({
-			model: openai(this.model),
-			prompt: clean`Please identify any duplicate tags from the following lists, accounting for variations in spelling, nicknames, or formatting.
+		const { duplicates } = await generateObject({
+			model: this.model as ChatModel,
+			apiKey: env.OPENAI_API_KEY,
+			systemPrompt: clean`Please identify any duplicate tags from the following lists, accounting for variations in spelling, nicknames, or formatting.
 				Only mark as duplicates if you are highly confident they refer to the same entity.
 				
 				Existing tags:
@@ -291,9 +284,10 @@ export class Memory {
 
 		let toDelete: { index: number }[] = []
 		if (relatedFacts && relatedFacts.length > 0) {
-			const { object } = await generateObject({
-				model: openai(this.model),
-				prompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
+			const { statements } = await generateObject({
+				model: this.model as ChatModel,
+				apiKey: env.OPENAI_API_KEY,
+				systemPrompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
 				You should only delete facts that have been overwritten by the new facts.
 				This means it is common to not delete anything.
 
@@ -320,7 +314,7 @@ export class Memory {
 						.default([])
 				})
 			})
-			toDelete = object.statements.filter(s => s.shouldBeDeleted)
+			toDelete = statements.filter(s => s.shouldBeDeleted)
 		}
 
 		console.log('toDelete', toDelete)
