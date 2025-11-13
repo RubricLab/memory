@@ -62,6 +62,7 @@ export class Memory {
 
 	async extractFacts({ content }: { content: string }): Promise<{ facts: string[] }> {
 		const { facts } = await generateObject({
+			apiMode: 'completions',
 			model: this.model as ChatModel,
 			apiKey: env.OPENAI_API_KEY,
 			systemPrompt: clean`Please extract interesting facts from the following passage if they teach us something about the user.
@@ -86,6 +87,7 @@ export class Memory {
 
 	async extractTags({ content }: { content: string }): Promise<{ tags: string[] }> {
 		const { entities: tags } = await generateObject({
+			apiMode: 'completions',
 			model: this.model as ChatModel,
 			systemPrompt: clean`Please extract all entities (subjects, objects, and general metaphysical concepts) from the following passage.
 				In case of first-person statements, portray the first-person as "user".
@@ -113,7 +115,9 @@ export class Memory {
 
 		if (!embeddings || embeddings?.length === 0) throw 'No embedding found'
 
-		return 'texts' in props ? embeddings : embeddings[0]
+		return 'texts' in props
+			? embeddings.map(e => e.slice(0, this.embeddingsDimension))
+			: (embeddings[0]?.slice(0, this.embeddingsDimension) ?? [])
 	}
 
 	async insert(
@@ -224,6 +228,7 @@ export class Memory {
 
 		// Add duplicate detection
 		const { duplicates } = await generateObject({
+			apiMode: 'completions',
 			model: this.model as ChatModel,
 			apiKey: env.OPENAI_API_KEY,
 			systemPrompt: clean`Please identify any duplicate tags from the following lists, accounting for variations in spelling, nicknames, or formatting.
@@ -285,6 +290,7 @@ export class Memory {
 		let toDelete: { index: number }[] = []
 		if (relatedFacts && relatedFacts.length > 0) {
 			const { statements } = await generateObject({
+				apiMode: 'completions',
 				model: this.model as ChatModel,
 				apiKey: env.OPENAI_API_KEY,
 				systemPrompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
