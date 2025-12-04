@@ -1,9 +1,17 @@
 import { parseArgs } from 'node:util'
-import { PrismaClient } from '@prisma/client'
+import { Kysely, PostgresDialect } from 'kysely'
+import { Pool } from 'pg'
 import { runMultiTurnExamples } from '@/evals/multi-turn'
-import type { Database } from '@/types'
+import type { Schema } from '@/types'
+import env from '../../env'
 
-const db: Database = new PrismaClient()
+const db = new Kysely<Schema>({
+	dialect: new PostgresDialect({
+		pool: new Pool({
+			connectionString: env.DATABASE_URL
+		})
+	})
+})
 
 const args = parseArgs({
 	allowPositionals: true,
@@ -28,13 +36,13 @@ if (import.meta.path === Bun.main) {
   Usage: bun evals/index.ts [options]
 
   Options:
-    --sota    Use gpt-4o-2024-08-06 instead of gpt-4o-mini
+    --sota    Use gpt-5.1
     --help    Show this help message
 `)
 		process.exit(0)
 	}
 
-	const model = sota ? 'gpt-4o-2024-08-06' : 'gpt-4o-mini'
+	const model = sota ? 'gpt-5.1' : 'gpt-5-mini'
 
 	await runMultiTurnExamples({ db, model })
 }

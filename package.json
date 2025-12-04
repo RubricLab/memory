@@ -5,7 +5,6 @@
 		"@rubriclab/config": "*",
 		"@rubriclab/package": "*",
 		"@t3-oss/env-nextjs": "0.13.8",
-		"@types/pg": "8.15.6",
 		"chalk": "5.6.2",
 		"kysely": "0.28.8",
 		"nanoid": "5.1.6",
@@ -14,16 +13,14 @@
 		"zod": "4.1.13"
 	},
 	"devDependencies": {
-		"@types/bun": "1.3.3"
+		"@types/bun": "1.3.3",
+		"@types/pg": "8.15.6"
 	},
 	"main": "src/index.ts",
 	"module": "src/index.ts",
 	"name": "@rubriclab/memory",
 	"peerDependencies": {
 		"typescript": "^5.0.0"
-	},
-	"prisma": {
-		"schema": "./prisma/schema"
 	},
 	"private": false,
 	"publishConfig": {
@@ -35,11 +32,12 @@
 		"db:generate": "bun x kysely-codegen --include-pattern='public.*'",
 		"eval": "bun src/evals/index.ts",
 		"format": "bun x biome check . --write",
+		"lint:fix": "bun x biome lint --write --unsafe .",
 		"prepare": "bun x @rubriclab/package prepare"
 	},
 	"simple-git-hooks": {
 		"post-commit": "bun x @rubriclab/package post-commit"
 	},
 	"type": "module",
-	"version": "0.0.55"
+	"version": "0.0.56"
 }

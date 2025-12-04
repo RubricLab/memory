@@ -32,7 +32,7 @@ export class Memory {
 	}
 
 	constructor({
-		model = 'gpt-4.1-mini',
+		model = 'gpt-5-mini',
 		db = new Kysely<Schema>({
 			dialect: new PostgresDialect({
 				pool: new Pool({
@@ -62,9 +62,16 @@ export class Memory {
 
 	async extractFacts({ content }: { content: string }): Promise<{ facts: string[] }> {
 		const { facts } = await generateObject({
+			apiKey: env.OPENAI_API_KEY,
 			apiMode: 'completions',
 			model: this.model as ChatModel,
-			apiKey: env.OPENAI_API_KEY,
+			schema: z.object({
+				facts: z.array(
+					z.object({
+						body: z.string()
+					})
+				)
+			}),
 			systemPrompt: clean`Please extract interesting facts from the following passage if they teach us something about the user.
 				In case of first-person statements, portray the first-person as "user".
 				In case of second-person statements, refer to yourself as "system".
@@ -72,14 +79,7 @@ export class Memory {
 				In case of contradiction, try to capture the most up-to-date state of affairs in present tense.
 				In the case where no new information is to be gained or the user is simply asking a question, please respond with an empty array.
 				Passage:
-				"${content}"`,
-			schema: z.object({
-				facts: z.array(
-					z.object({
-						body: z.string()
-					})
-				)
-			})
+				"${content}"`
 		})
 
 		return { facts: facts?.map(({ body }) => body) }
@@ -87,16 +87,16 @@ export class Memory {
 
 	async extractTags({ content }: { content: string }): Promise<{ tags: string[] }> {
 		const { entities: tags } = await generateObject({
+			apiKey: env.OPENAI_API_KEY,
 			apiMode: 'completions',
 			model: this.model as ChatModel,
+			schema: z.object({
+				entities: z.array(z.string())
+			}),
 			systemPrompt: clean`Please extract all entities (subjects, objects, and general metaphysical concepts) from the following passage.
 				In case of first-person statements, portray the first-person as "user".
 				Passage:
-				"${content}"`,
-			apiKey: env.OPENAI_API_KEY,
-			schema: z.object({
-				entities: z.array(z.string())
-			})
+				"${content}"`
 		})
 
 		return { tags }
@@ -228,9 +228,18 @@ export class Memory {
 
 		// Add duplicate detection
 		const { duplicates } = await generateObject({
+			apiKey: env.OPENAI_API_KEY,
 			apiMode: 'completions',
 			model: this.model as ChatModel,
-			apiKey: env.OPENAI_API_KEY,
+			schema: z.object({
+				duplicates: z.array(
+					z.object({
+						confidence: z.number().min(0).max(1),
+						existingTag: z.string(),
+						newTag: z.string()
+					})
+				)
+			}),
 			systemPrompt: clean`Please identify any duplicate tags from the following lists, accounting for variations in spelling, nicknames, or formatting.
 				Only mark as duplicates if you are highly confident they refer to the same entity.
 				
@@ -241,16 +250,7 @@ export class Memory {
 				${uniqueTags.join('\n')}
 				
 				Return pairs of duplicates with a confidence score.
-				A confidence of 0.9+ means very likely match (e.g., "NYC" vs "New York City")`,
-			schema: z.object({
-				duplicates: z.array(
-					z.object({
-						confidence: z.number().min(0).max(1),
-						existingTag: z.string(),
-						newTag: z.string()
-					})
-				)
-			})
+				A confidence of 0.9+ means very likely match (e.g., "NYC" vs "New York City")`
 		})
 
 		const CONFIDENCE_THRESHOLD = 0.5
@@ -290,22 +290,9 @@ export class Memory {
 		let toDelete: { index: number }[] = []
 		if (relatedFacts && relatedFacts.length > 0) {
 			const { statements } = await generateObject({
+				apiKey: env.OPENAI_API_KEY,
 				apiMode: 'completions',
 				model: this.model as ChatModel,
-				apiKey: env.OPENAI_API_KEY,
-				systemPrompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
-				You should only delete facts that have been overwritten by the new facts.
-				This means it is common to not delete anything.
-
-				Existing facts:
-				${relatedFacts.map((r, i) => `${i}. ${r.body}`).join('\n')}
-
-				New information:
-				${facts.map(f => `- ${f}`).join('\n')}
-				
-				Chosen statements will be deleted permanently. Only delete them if certain!
-				Take a breath. Let's think this through.
-				`,
 				schema: z.object({
 					statements: z
 						.array(
@@ -318,7 +305,20 @@ export class Memory {
 							})
 						)
 						.default([])
-				})
+				}),
+				systemPrompt: clean`Given the following facts and some new information, please identify any existing facts that have been proven wrong by the new information.
+				You should only delete facts that have been overwritten by the new facts.
+				This means it is common to not delete anything.
+
+				Existing facts:
+				${relatedFacts.map((r, i) => `${i}. ${r.body}`).join('\n')}
+
+				New information:
+				${facts.map(f => `- ${f}`).join('\n')}
+				
+				Chosen statements will be deleted permanently. Only delete them if certain!
+				Take a breath. Let's think this through.
+				`
 			})
 			toDelete = statements.filter(s => s.shouldBeDeleted)
 		}
