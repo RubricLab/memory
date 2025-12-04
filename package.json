@@ -5,6 +5,7 @@
 		"@rubriclab/config": "*",
 		"@rubriclab/package": "*",
 		"@t3-oss/env-nextjs": "0.13.8",
+		"@types/pg": "8.15.6",
 		"chalk": "5.6.2",
 		"kysely": "0.28.8",
 		"nanoid": "5.1.6",
@@ -13,8 +14,7 @@
 		"zod": "4.1.13"
 	},
 	"devDependencies": {
-		"@types/bun": "1.3.3",
-		"@types/pg": "8.15.6"
+		"@types/bun": "1.3.3"
 	},
 	"main": "src/index.ts",
 	"module": "src/index.ts",
@@ -39,5 +39,5 @@
 		"post-commit": "bun x @rubriclab/package post-commit"
 	},
 	"type": "module",
-	"version": "0.0.56"
+	"version": "0.0.57"
 }

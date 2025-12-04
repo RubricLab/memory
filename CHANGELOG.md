@@ -1,3 +1,4 @@
+- [2025-12-04] [Bundle PG types in production build](https://github.com/RubricLab/memory/commit/c53e12c8c046424fcce77ddd8a435e8e42f2a362)
 - [2025-12-04] [Fix](https://github.com/RubricLab/memory/commit/2e3c6d76bd70d10a40d994e59d609562fdda62c2)
 - [2025-12-04] [Bleed](https://github.com/RubricLab/memory/commit/ac36852dab9496655c4be6e2aef8856df9a68fee)
 - [2025-11-13] [Fix](https://github.com/RubricLab/memory/commit/61beb66e599e8495cf91e65eb515470fedfc2c49)
